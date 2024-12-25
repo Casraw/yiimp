@@ -38,9 +38,22 @@ class ApiController extends CommonController
                 ':algo' => $algo
             ));
 
-            $hashrate = controller()->memcache->get_database_scalar("api_status_hashrate-$algo", "select hashrate from hashrate where algo=:algo order by time desc limit 1", array(
+            $workers_shared = (int) controller()->memcache->get_database_scalar("api_status_workers_shared-$algo", "select COUNT(id) FROM workers WHERE algo=:algo and not password like '%m=solo%'", array(
                 ':algo' => $algo
             ));
+
+            $workers_solo = (int) controller()->memcache->get_database_scalar("api_status_workers_solo-$algo", "select COUNT(id) FROM workers WHERE algo=:algo and password like '%m=solo%'", array(
+                ':algo' => $algo
+            ));
+
+			if (yaamp_pool_rate($algo)) $pool_hash = yaamp_pool_rate($algo);
+			else $pool_hash = '0';
+
+			if (yaamp_pool_shared_rate($algo)) $pool_shared_hash = yaamp_pool_shared_rate($algo);
+			else $pool_shared_hash = '0';
+
+			if (yaamp_pool_solo_rate($algo)) $pool_shared_hash = yaamp_pool_solo_rate($algo);
+			else $pool_solo_hash = '0';
 
             $price = controller()->memcache->get_database_scalar("api_status_price-$algo", "select price from hashrate where algo=:algo order by time desc limit 1", array(
                 ':algo' => $algo
@@ -74,6 +87,7 @@ class ApiController extends CommonController
             $btcmhday1        = $hashrate1 > 0 ? mbitcoinvaluetoa($total1 / $hashrate1 * 1000000 * 1000 * $algo_unit_factor) : 0;
 
             $fees = yaamp_fee($algo);
+            $fees_solo = yaamp_fee_solo($algo);
             $port = getAlgoPort($algo);
 
             $stat = array(
@@ -81,8 +95,13 @@ class ApiController extends CommonController
                 "port" => (int) $port,
                 "coins" => $coins,
                 "fees" => (double) $fees,
-                "hashrate" => (double) $hashrate,
+                "fees_solo" => (double) $fees_solo,
+                "hashrate" => (int) $pool_hash,
+                "hashrate_shared" => (int) $pool_shared_hash,
+                "hashrate_solo" => (int) $pool_solo_hash,
                 "workers" => (int) $workers,
+                "workers_shared" => (int) $workers_shared,
+                "workers_solo" => (int) $workers_solo,
                 "estimate_current" => $price,
                 "estimate_last24h" => $avgprice,
                 "actual_last24h" => $btcmhday1,
@@ -117,80 +136,110 @@ class ApiController extends CommonController
         }
 
         $json = controller()->memcache->get("api_currencies");
-        if (empty($json)) {
+        if (empty($json)) 
+		{
 
             $data  = array();
             $coins = getdbolist('db_coins', "enable AND visible AND auto_ready AND IFNULL(algo,'PoS')!='PoS' ORDER BY symbol");
-            foreach ($coins as $coin) {
-                $symbol = $coin->symbol;
+            foreach ($coins as $coin) 
+			{
+				$symbol = $coin->symbol;
+				
+				$last          = dborow("SELECT height, time FROM blocks " . "WHERE coin_id=:id AND category IN ('immature','generate') ORDER BY height DESC LIMIT 1", array(':id' => $coin->id));
+                $last_shared   = dborow("SELECT height, time FROM blocks " . "WHERE coin_id=:id AND solo=0 AND category IN ('immature','generate') ORDER BY height DESC LIMIT 1", array(':id' => $coin->id));
+                $last_solo     = dborow("SELECT height, time FROM blocks " . "WHERE coin_id=:id AND solo=1 AND category IN ('immature','generate') ORDER BY height DESC LIMIT 1", array(':id' => $coin->id));
+				
+				$lastblock     = (int) arraySafeVal($last, 'height');
+				$lastblock_shared   = (int) arraySafeVal($last_shared, 'height');
+				$lastblock_solo     = (int) arraySafeVal($last_solo, 'height');
+				
+				$timesincelast = $timelast = (int) arraySafeVal($last, 'time');
+				if ($timelast > 0)
+					$timesincelast = time() - $timelast;
+				
+				$timesincelast_shared = $timelast_shared = (int) arraySafeVal($last_shared, 'time');
+				if ($timelast_shared > 0)
+					$timesincelast_shared = time() - $timelast_shared;
+				
+				$timesincelast_solo = $timelast_solo = (int) arraySafeVal($last_solo, 'time');
+				if ($timelast_solo > 0)
+					$timesincelast_solo = time() - $timelast_solo;
 
-                $last          = dborow("SELECT height, time FROM blocks " . "WHERE coin_id=:id AND category IN ('immature','generate') ORDER BY height DESC LIMIT 1", array(
-                    ':id' => $coin->id
-                ));
-                $lastblock     = (int) arraySafeVal($last, 'height');
-                $timesincelast = $timelast = (int) arraySafeVal($last, 'time');
-                if ($timelast > 0)
-                    $timesincelast = time() - $timelast;
+				$miners = getdbocount('db_accounts', "coinid=:coinid and (id IN (SELECT DISTINCT userid FROM workers))", array(':coinid' => $coin->id));
+				$workers = (int) dboscalar("SELECT count(W.userid) AS workers FROM workers W " . "INNER JOIN accounts A ON A.id = W.userid " . "WHERE W.algo=:algo AND A.coinid IN (:id, 6)",array(':algo' => $coin->algo,':id' => $coin->id));
+				$workers_shared = (int) dboscalar("SELECT count(W.userid) AS workers FROM workers W " . "INNER JOIN accounts A ON A.id = W.userid " . "WHERE W.algo=:algo AND A.coinid IN (:id, 6) and not password like '%m=solo%'",array(':algo' => $coin->algo,':id' => $coin->id));
+				$workers_solo = (int) dboscalar("SELECT count(W.userid) AS workers FROM workers W " . "INNER JOIN accounts A ON A.id = W.userid " . "WHERE W.algo=:algo AND A.coinid IN (:id, 6)and password like '%m=solo%'",array(':algo' => $coin->algo,':id' => $coin->id));
+				
+				$since  = $timelast ? $timelast : time() - 60 * 60;
+				$shares = dborow("SELECT count(id) AS shares, SUM(difficulty) AS coin_hr FROM shares WHERE time>$since AND algo=:algo AND coinid IN (0,:id)", array(':id' => $coin->id,':algo' => $coin->algo));
+				
+				$t24    = time() - 24 * 60 * 60;
+				$res24h = controller()->memcache->get_database_row("history_item2-{$coin->id}-{$coin->algo}", "SELECT COUNT(id) as a, SUM(amount*price) as b FROM blocks " . "WHERE coin_id=:id AND NOT category IN ('orphan','stake','generated') AND time>$t24 AND algo=:algo", array(':id' => $coin->id,':algo' => $coin->algo));
+				$res24h_shared = controller()->memcache->get_database_row("history_item2-shared-{$coin->id}-{$coin->algo}", "SELECT COUNT(id) as a, SUM(amount*price) as b FROM blocks " . "WHERE coin_id=:id AND solo=0 AND NOT category IN ('orphan','stake','generated') AND time>$t24 AND algo=:algo", array(':id' => $coin->id,':algo' => $coin->algo));
+				$res24h_solo = controller()->memcache->get_database_row("history_item2-solo-{$coin->id}-{$coin->algo}", "SELECT COUNT(id) as a, SUM(amount*price) as b FROM blocks " . "WHERE coin_id=:id AND solo=1 AND NOT category IN ('orphan','stake','generated') AND time>$t24 AND algo=:algo ", array(':id' => $coin->id,':algo' => $coin->algo));
+				
+				// Coin hashrate, we only store the hashrate per algo in the db,
+				if (yaamp_coin_rate($coin->id)) $pool_hash = yaamp_coin_rate($coin->id);
+				else $pool_hash = '0';
+		
+				if (yaamp_coin_shared_rate($coin->id)) $pool_shared_hash = yaamp_coin_shared_rate($coin->id);
+				else $pool_shared_hash = '0';
+		
 
-                $workers = (int) dboscalar("SELECT count(W.userid) AS workers FROM workers W " . "INNER JOIN accounts A ON A.id = W.userid " . "WHERE W.algo=:algo AND A.coinid IN (:id, 6)", // 6: btc id
-                    array(
-                    ':algo' => $coin->algo,
-                    ':id' => $coin->id
-                ));
+				if (yaamp_coin_solo_rate($coin->id)) $pool_solo_hash = yaamp_coin_solo_rate($coin->id);
+				else $pool_solo_hash = '0';
+	
+				$btcmhd = yaamp_profitability($coin);
+				$btcmhd = mbitcoinvaluetoa($btcmhd);
+				
+				//Add network hash difficulty and symbol
+				$min_ttf      = $coin->network_ttf > 0 ? min($coin->actual_ttf, $coin->network_ttf) : $coin->actual_ttf;
+				$network_hash = $coin->difficulty * 0x100000000 / ($min_ttf ? $min_ttf : 60);
 
-                $since  = $timelast ? $timelast : time() - 60 * 60;
-                $shares = dborow("SELECT count(id) AS shares, SUM(difficulty) AS coin_hr FROM shares WHERE time>$since AND algo=:algo AND coinid IN (0,:id)", array(
-                    ':id' => $coin->id,
-                    ':algo' => $coin->algo
-                ));
+				$fees = yaamp_fee($coin->algo);
+				$fees_solo = yaamp_fee_solo($coin->algo);
+				$port_db = getdbosql('db_stratums', "algo=:algo and symbol=:symbol", array(':algo' => $coin->algo,':symbol' => $coin->symbol));
 
-                $t24    = time() - 24 * 60 * 60;
-                $res24h = controller()->memcache->get_database_row("history_item2-{$coin->id}-{$coin->algo}", "SELECT COUNT(id) as a, SUM(amount*price) as b FROM blocks " . "WHERE coin_id=:id AND NOT category IN ('orphan','stake','generated') AND time>$t24 AND algo=:algo", array(
-                    ':id' => $coin->id,
-                    ':algo' => $coin->algo
-                ));
+				if ($port_db) 
+					$port = $port_db->port;
+				else 
+					$port = getAlgoPort($coin->algo);
 
-                // Coin hashrate, we only store the hashrate per algo in the db,
-                // we need to compute the % of the coin compared to others with the same algo
-                if ($workers > 0) {
-
-                    $algohr        = (double) dboscalar("SELECT SUM(difficulty) AS algo_hr FROM shares WHERE time>$since AND algo=:algo", array(
-                        ':algo' => $coin->algo
-                    ));
-                    $factor        = ($algohr > 0 && !empty($shares)) ? (double) $shares['coin_hr'] / $algohr : 1.;
-                    $algo_hashrate = controller()->memcache->get_database_scalar("api_status_hashrate-{$coin->algo}", "SELECT hashrate FROM hashrate WHERE algo=:algo ORDER BY time DESC LIMIT 1", array(
-                        ':algo' => $coin->algo
-                    ));
-
-                } else {
-                    $factor = $algo_hashrate = 0;
-                }
-
-                $btcmhd = yaamp_profitability($coin);
-                $btcmhd = mbitcoinvaluetoa($btcmhd);
-
-                //Add network hash difficulty and symbol
-                $min_ttf      = $coin->network_ttf > 0 ? min($coin->actual_ttf, $coin->network_ttf) : $coin->actual_ttf;
-                $network_hash = $coin->difficulty * 0x100000000 / ($min_ttf ? $min_ttf : 60);
-
-                $data[$symbol] = array(
-                    'algo' => $coin->algo,
-                    'port' => getAlgoPort($coin->algo),
-                    'name' => $coin->name,
-                    'reward' => $coin->reward,
-                    'height' => (int) $coin->block_height,
-                    'difficulty' => $coin->difficulty,
-                    'workers' => $workers,
-                    'shares' => (int) arraySafeVal($shares, 'shares'),
-                    'hashrate' => round($factor * $algo_hashrate),
-                    'network_hashrate' => $network_hash,
-                    'estimate' => $btcmhd,
-                    //'percent' => round($factor * 100, 1),
-                    '24h_blocks' => (int) arraySafeVal($res24h, 'a'),
-                    '24h_btc' => round(arraySafeVal($res24h, 'b', 0), 8),
-                    'lastblock' => $lastblock,
-                    'timesincelast' => $timesincelast
-                );
+				$min_payout = max(floatval(YAAMP_PAYMENTS_MINI), floatval($coin->payout_min));
+		
+				$data[$symbol] = array
+				(
+					'name' => $coin->name,
+					'algo' => $coin->algo,
+					'port' => $port,
+					'reward' => $coin->reward,
+					'blocktime' => $coin->block_time,
+					'height' => (int) $coin->block_height,
+					'difficulty' => $coin->difficulty,
+					'minimumPayment' => $min_payout,
+					'fees' => (double) $fees,
+					'fees_solo' => (double) $fees_solo,
+					'miners' => $miners,
+					'workers' => $workers,
+					'workers_shared' => $workers_shared,
+					'workers_solo' => $workers_solo,
+					'shares' => (int) arraySafeVal($shares, 'shares'),
+					'hashrate' => $pool_hash,
+					'hashrate_shared' => $pool_shared_hash,
+					'hashrate_solo' => $pool_solo_hash,
+					'network_hashrate' => $network_hash,
+					'estimate' => $btcmhd,
+					'24h_blocks' => (int) arraySafeVal($res24h, 'a'),
+					'24h_blocks_shared' => (int) arraySafeVal($res24h_shared, 'a'),
+					'24h_blocks_solo' => (int) arraySafeVal($res24h_solo, 'a'),
+					'24h_btc' => round(arraySafeVal($res24h, 'b', 0), 8),
+					'lastblock' => $lastblock,
+					'lastblock_shared' => $lastblock_shared,
+					'lastblock_solo' => $lastblock_solo,
+					'timesincelast' => $timesincelast,
+					'timesincelast_shared' => $timesincelast_shared,
+					'timesincelast_solo' => $timesincelast_solo
+				);
 
                 if (!empty($coin->symbol2))
                     $data[$symbol]['symbol'] = $coin->symbol2;

@@ -70,10 +70,14 @@ echo <<<end
 <script>
 
 var global_algo = '$algo';
+var querystring = '?algo=$algo';
+if (querystring=='?algo=') querystring = '';
 
 function select_algo(algo)
 {
-	window.location.href = '/site/gomining?algo='+algo;
+	//window.location.href = '/site/gomining?algo='+algo;
+	window.location.href = '/site/algo?algo='+algo+'&r=/site/mining';
+	//window.location.href = '/site/mining?algo='+algo;
 }
 
 function page_refresh()
@@ -98,7 +102,7 @@ function pool_current_ready(data)
 
 function pool_current_refresh()
 {
-	var url = "/site/current_results";
+	var url = "/site/current_results"+querystring;
 	$.get(url, '', pool_current_ready);
 }
 
@@ -111,7 +115,7 @@ function mining_ready(data)
 
 function mining_refresh()
 {
-	var url = "/site/mining_results";
+	var url = "/site/mining_results"+querystring;
 	$.get(url, '', mining_ready);
 }
 
@@ -124,7 +128,7 @@ function found_ready(data)
 
 function found_refresh()
 {
-	var url = "/site/found_results";
+	var url = "/site/found_results"+querystring;
 	$.get(url, '', found_ready);
 }
 
@@ -137,7 +141,7 @@ function main_ready_price(data)
 
 function main_refresh_price()
 {
-	var url = "/site/graph_price_results";
+	var url = "/site/graph_price_results"+querystring;
 	$.get(url, '', main_ready_price);
 }
 
@@ -186,7 +190,7 @@ function pool_hashrate_ready(data)
 
 function pool_hashrate_refresh()
 {
-	var url = "/site/graph_hashrate_results";
+	var url = "/site/graph_hashrate_results"+querystring;
 	$.get(url, '', pool_hashrate_ready);
 }
 
@@ -197,7 +201,7 @@ function pool_hashrate_graph_init(data)
 	var t = $.parseJSON(data);
 	var plot1 = $.jqplot('pool_hashrate_results', t,
 	{
-		title: '<b>Pool Hashrate ({$algo_unit}/s)</b>',
+		title: '<b>Pool Hashrate ($algo_unit/s)</b>',
 		axes: {
 			xaxis: {
 				tickInterval: 7200,
