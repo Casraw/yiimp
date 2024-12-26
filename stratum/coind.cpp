@@ -109,49 +109,39 @@ bool coind_validate_user_address(YAAMP_COIND *coind, char* const address)
 
 bool coind_validate_address(YAAMP_COIND *coind)
 {
-    if (!coind->wallet[0]) return false;
+	if(!coind->wallet[0]) return false;
 
-    char params[YAAMP_SMALLBUFSIZE];
-    sprintf(params, "[\"%s\"]", coind->wallet);
+	char params[YAAMP_SMALLBUFSIZE];
+	sprintf(params, "[\"%s\"]", coind->wallet);
 
-    json_value *json;
-    bool getaddressinfo = false;
+	json_value *json;
+	bool getaddressinfo = false;
+	json = rpc_call(&coind->rpc, "validateaddress", params);
+	if(!json) return false;
 
-    // Attempt to use "validateaddress" first
-    json = rpc_call(&coind->rpc, "validateaddress", params);
-    if (!json) return false;
+	json_value *json_result = json_get_object(json, "result");
+	if(!json_result)
+	{
+		json_value_free(json);
+		return false;
+	}
 
-    json_value *json_result = json_get_object(json, "result");
-    if (!json_result)
-    {
-        json_value_free(json);
-        return false;
-    }
+	if(!json_get_bool(json_result, "ismine"))
+	{
+		stratumlog("%s wallet is using getaddressinfo.\n", coind->name);
+		getaddressinfo = true;
+		json = rpc_call(&coind->rpc, "getaddressinfo", params);
 
-    // Check if the address is valid and belongs to the wallet
-    if (!json_get_bool(json_result, "ismine"))
-    {
-        stratumlog("%s wallet is using getnewaddress instead of validateaddress.\n", coind->name);
-        getaddressinfo = true;
-        json_value_free(json);
-
-        // Use "getnewaddress" as fallback (Litecoin Cash compatible)
-        json = rpc_call(&coind->rpc, "getnewaddress", "[]");
-        if (!json) return false;
-
-        json_result = json_get_object(json, "result");
-        if (!json_result)
-        {
-            json_value_free(json);
-            return false;
-        }
-    }
-
-    bool isvalid = getaddressinfo || json_get_bool(json_result, "isvalid");
-    if (!isvalid) stratumlog("%s wallet %s is not valid.\n", coind->name, coind->wallet);
-
-    json_value_free(json);
-    return isvalid;
+		json_result = json_get_object(json, "result");
+		if(!json_result)
+		{
+			json_value_free(json);
+			return false;
+		}
+	}
+	
+	bool isvalid = getaddressinfo || json_get_bool(json_result, "isvalid");
+	if(!isvalid) stratumlog("%s wallet %s is not valid.\n", coind->name, coind->wallet);
 
 	bool ismine = json_get_bool(json_result, "ismine");
 	if(!ismine) stratumlog("%s wallet %s is not mine.\n", coind->name, coind->wallet);
