@@ -1,7 +1,7 @@
 <?php
 	#set_time_limit(60);
 	
-	require_once("/var/web/serverconfig.php");
+	require_once("/home/crypto-data/yiimp/site/configuration/serverconfig.php");
 	//require_once("/var/web/keys.php");
     // require_once("/var/web/yaamp/core/core.php");
 
