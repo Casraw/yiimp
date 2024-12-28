@@ -114,15 +114,15 @@ static void neoscrypt_hash(const char* input, char* output, uint32_t len)
 
 YAAMP_ALGO g_algos[] =
 {
-	{"0x10", hash0x10, 1, 0, 0},
+//	{"0x10", 0x10_hash, 1, 0, 0},
 	{"a5a", a5a_hash, 0x10000, 0, 0},
 	{"aergo", aergo_hash, 1, 0, 0},
 	{"allium", allium_hash, 0x100, 0, 0},
-	{"anime", anime_hash, 1, 0, 0},
-	{"argon2d250", argon2d_crds_hash, 0x10000, 0, 0 }, // Credits Argon2d Implementation
+//	{"anime", anime_hash, 1, 0, 0},
+//	{"argon2d250", argon2d_crds_hash, 0x10000, 0, 0 }, // Credits Argon2d Implementation
 	{"argon2d500", argon2d_dyn_hash, 0x10000, 0, 0 }, // Dynamic Argon2d Implementation
-	{"argon2d16000", argon2d16000_hash, 0x10000, 0, 0 }, // Argon2d16000 Implementation
-	{"astralhash", astralhash_hash, 0x100, 0, 0},
+//	{"argon2d16000", argon2d_hash, 0x10000, 0, 0 }, // Argon2d16000 Implementation
+//	{"astralhash", astralhash_hash, 0x100, 0, 0},
 	{"bastion", bastion_hash, 1, 0 },
 	{"bcd", bcd_hash, 1, 0, 0},
 	{"bitcore", timetravel10_hash, 0x100, 0, 0},
@@ -134,7 +134,7 @@ YAAMP_ALGO g_algos[] =
 	{"c11", c11_hash, 1, 0, 0},
 	{"cosa", cosa_hash, 1, 0, 0}, //Cosanta (COSA)
 	{"cpupower", cpupower_hash, 0x10000, 0, 0}, //CPUchain
-	{"curvehash", curve_hash, 1, 0, 0},
+//	{"curvehash", curve_hash, 1, 0, 0},
 	{"decred", decred_hash, 1, 0 },
 	{"dedal", dedal_hash, 0x100, 0, 0},
 	{"deep", deep_hash, 1, 0, 0},
@@ -143,13 +143,13 @@ YAAMP_ALGO g_algos[] =
 	{"geek", geek_hash, 1, 0, 0},
 	{"gr", gr_hash, 0x10000, 0, 0},
 	{"groestl", groestl_hash, 0x100, 0, sha256_hash_hex }, /* groestlcoin */
-	{"heavyhash", heavyhash_hash, 1, 0, 0}, /* OBTC */
+//	{"heavyhash", heavyhash_hash, 1, 0, 0}, /* OBTC */
 	{"hex", hex_hash, 0x100, 0, sha256_hash_hex },
 	{"hive", hive_hash, 0x10000, 0, 0},
 	{"hmq1725", hmq17_hash, 0x10000, 0, 0},
 	{"honeycomb", beenode_hash, 0x10000, 0, 0},
 	{"hsr", hsr_hash, 1, 0, 0},
-	{"jeonghash", jeonghash_hash, 0x100, 0, 0},
+//	{"jeonghash", jeonghash_hash, 0x100, 0, 0},
 	{"jha", jha_hash, 0x10000, 0},
 	{"keccak", keccak256_hash, 0x80, 0, sha256_hash_hex },
 	{"keccakc", keccak256_hash, 0x100, 0, 0},
@@ -163,7 +163,7 @@ YAAMP_ALGO g_algos[] =
 	{"lyra2z", lyra2z_hash, 0x100, 0, 0},
 	{"lyra2z330", lyra2z330_hash, 0x100, 0, 0},
 	{"m7m", m7m_hash, 0x10000, 0, 0},
-	{"memehash", meme_hash, 1, 0, 0}, /*PepePow Algo*/
+//	{"memehash", meme_hash, 1, 0, 0}, /*PepePow Algo*/
 	{"megabtx", megabtx_hash, 0x100, 0, 0}, /* Bitcore New Algo*/
 	{"megamec", megamec_hash, 0x100, 0, 0}, /* Megacoin New Algo*/
 	{"mike", mike_hash, 0x10000, 0, 0},
@@ -172,12 +172,12 @@ YAAMP_ALGO g_algos[] =
 	{"myr-gr", groestlmyriad_hash, 1, 0, 0}, /* groestl + sha 64 */
 	{"neoscrypt", neoscrypt_hash, 0x10000, 0, 0},
 	{"nist5", nist5_hash, 1, 0, 0},
-	{"pawelhash", pawelhash_hash, 0x100, 0, 0},
+//	{"pawelhash", pawelhash_hash, 0x100, 0, 0},
 	{"penta", penta_hash, 1, 0, 0},
 	{"phi", phi_hash, 1, 0, 0},
 	{"phi2", phi2_hash, 0x100, 0, 0},
 	{"phi5", phi5_hash, 1, 0, 0},
-	{"pipe", pipe_hash, 1,0,0},
+//	{"pipe", pipe_hash, 1,0,0},
 	{"polytimos", polytimos_hash, 1, 0, 0},
 	{"power2b", power2b_hash, 0x10000, 0, 0 },
 	{"quark", quark_hash, 1, 0, 0},
@@ -191,7 +191,7 @@ YAAMP_ALGO g_algos[] =
 	{"sha256dt", sha256dt_hash, 1, 0, 0},
 	{"sha256csm", sha256csm_hash, 1, 0, 0},
 	{"sha256t", sha256t_hash, 1, 0, 0}, // sha256 3x
-	{"sha3d", sha3d_hash, 1, 0, sha3d_hash_hex},
+//	{"sha3d", sha3d_hash, 1, 0, sha3d_hash_hex},
 	{"sha512256d", sha512_256_double_hash, 1, 0, 0},
 	{"sib", sib_hash, 1, 0, 0},
 	{"skydoge", skydoge_hash, 1, 0, 0}, /* Skydoge */
@@ -227,7 +227,7 @@ YAAMP_ALGO g_algos[] =
 	{"x25x", x25x_hash, 1, 0, 0},
 	{"xevan", xevan_hash, 0x100, 0, 0},
 	{"yescrypt", yescrypt_hash, 0x10000, 0, 0},
-	{"yescryptR8", yescryptR8_hash, 0x10000, 0, 0 },
+//	{"yescryptR8", yescryptR8_hash, 0x10000, 0, 0 },
 	{"yescryptR16", yescryptR16_hash, 0x10000, 0, 0 },
 	{"yescryptR32", yescryptR32_hash, 0x10000, 0, 0 },
 	{"yespower", yespower_hash, 0x10000, 0, 0 },
