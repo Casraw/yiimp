@@ -120,7 +120,7 @@ YAAMP_ALGO g_algos[] =
 	{"allium", allium_hash, 0x100, 0, 0},
 //	{"anime", anime_hash, 1, 0, 0},
 //	{"argon2d250", argon2d_crds_hash, 0x10000, 0, 0 }, // Credits Argon2d Implementation
-	{"argon2d500", argon2d_dyn_hash, 0x10000, 0, 0 }, // Dynamic Argon2d Implementation
+//	{"argon2d500", argon2d_dyn_hash, 0x10000, 0, 0 }, // Dynamic Argon2d Implementation
 //	{"argon2d16000", argon2d_hash, 0x10000, 0, 0 }, // Argon2d16000 Implementation
 //	{"astralhash", astralhash_hash, 0x100, 0, 0},
 	{"bastion", bastion_hash, 1, 0 },
@@ -148,7 +148,7 @@ YAAMP_ALGO g_algos[] =
 	{"hive", hive_hash, 0x10000, 0, 0},
 	{"hmq1725", hmq17_hash, 0x10000, 0, 0},
 	{"honeycomb", beenode_hash, 0x10000, 0, 0},
-	{"hsr", hsr_hash, 1, 0, 0},
+//	{"hsr", hsr_hash, 1, 0, 0},
 //	{"jeonghash", jeonghash_hash, 0x100, 0, 0},
 	{"jha", jha_hash, 0x10000, 0},
 	{"keccak", keccak256_hash, 0x80, 0, sha256_hash_hex },
@@ -226,7 +226,7 @@ YAAMP_ALGO g_algos[] =
 	{"x22i", x22i_hash, 1, 0, 0},
 	{"x25x", x25x_hash, 1, 0, 0},
 	{"xevan", xevan_hash, 0x100, 0, 0},
-	{"yescrypt", yescrypt_hash, 0x10000, 0, 0},
+//	{"yescrypt", yescrypt_hash, 0x10000, 0, 0},
 //	{"yescryptR8", yescryptR8_hash, 0x10000, 0, 0 },
 //	{"yescryptR16", yescryptR16_hash, 0x10000, 0, 0 },
 //	{"yescryptR32", yescryptR32_hash, 0x10000, 0, 0 },

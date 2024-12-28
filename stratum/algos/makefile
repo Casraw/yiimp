@@ -15,7 +15,7 @@ cryptonote/cryptonight_turtle.c cryptonote/cryptonight_turtle_lite.c cryptonote/
 x22.c scrypt.c skydoge.c gltalgos.c sha256.c lbk3.c \
 0x10.c Lyra2.c allium.c velvet.c rainforest.c anime.c \
 a5amath.c x11kvs.c KeccakP-800-reference.c x16rv2.c mike.c lyra2zz.c \
-vitalium.c Sponge.c pentablake.c blake.c hsr14.c x21s.c \
+vitalium.c Sponge.c pentablake.c blake.c x21s.c \
 sib.c x14.c aergo.c argon2a.c quark.c dedal.c \
 yescrypt.c x16s.c x17r.c minotaur.c x11.c luffa.c \
 scryptn.c renesis.c xevan.c qubit.c tribus.c a5a.c \
