@@ -82,28 +82,58 @@ void handle_mining_configure(YAAMP_CLIENT *client, json_value *json)
 {
     if (!client || !json) return;
 
-    // Werte aus der JSON-Anfrage extrahieren
+    // Parameter aus der Anfrage extrahieren
     json_value *params = json_get_array(json, "params");
-    if (!params) return;
+    if (!params || params->u.array.length < 2) return;
 
-    // Beispiel: Extrahiere Parameter, die vom Miner geschickt werden
-    json_value *param = json_get_object(params, 0);
-    if (param) {
-        // Hier kannst du die Parameter verarbeiten und entsprechend konfigurieren
-        // Beispiel: Ändere Einstellungen des Miners
-        client->some_config = param->u.string;
+    json_value *extensions = params->u.array.values[0];
+    json_value *ext_params = params->u.array.values[1];
+
+    if (extensions->type != json_array || ext_params->type != json_object) return;
+
+    // Antwort-Map vorbereiten
+    json_value *result = json_new_object();
+
+    // Unterstützte Erweiterungen verarbeiten
+    for (int i = 0; i < extensions->u.array.length; i++) {
+        const char *ext = extensions->u.array.values[i]->u.string;
+
+        if (strcmp(ext, "version-rolling") == 0) {
+            const char *mask = json_get_string_value(ext_params, "version-rolling.mask", "ffffffff");
+            int min_bit_count = json_get_int_value(ext_params, "version-rolling.min-bit-count", 2);
+
+            // Beispiel: Definiere eine serverseitige Maske für Version Rolling
+            const char *server_mask = "00fff000";
+            if (min_bit_count <= 12) {
+                json_add_bool(result, "version-rolling", true);
+                json_add_string(result, "version-rolling.mask", server_mask);
+            } else {
+                json_add_string(result, "version-rolling", "Requested min-bit-count too high");
+            }
+        } else if (strcmp(ext, "minimum-difficulty") == 0) {
+            double min_diff = json_get_double_value(ext_params, "minimum-difficulty.value", 0.0);
+            if (min_diff >= 0.0) {
+                json_add_bool(result, "minimum-difficulty", true);
+            } else {
+                json_add_string(result, "minimum-difficulty", "Invalid difficulty value");
+            }
+        } else {
+            // Unbekannte Erweiterung
+            json_add_bool(result, ext, false);
+        }
     }
 
-    // Sende eine Antwort zurück an den Miner
+    // Antwort erstellen und zurücksenden
     json_value *response = json_new_object();
-    json_add_string(response, "id", json_get_string(json, "id"));
-    json_add_string(response, "result", "success");
-    json_add_string(response, "method", "mining.configure");
+    json_add_null(response, "error");
+    json_add_value(response, "id", json_get_value(json, "id"));
+    json_add_value(response, "result", result);
 
-    // Antwort zurück an den Miner senden
     stratum_send_json(client, response);
     json_value_free(response);
 }
+
+
 
 static void scrypt_hash(const char* input, char* output, uint32_t len)
 {
