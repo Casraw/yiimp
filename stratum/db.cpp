@@ -207,6 +207,8 @@ void db_update_coinds(YAAMP_DB *db)
 		YAAMP_COIND *coind = (YAAMP_COIND *)object_find(&g_list_coind, atoi(row[0]));
 		if(!coind)
 		{
+			   if (!strlen(g_stratum_coin_include) || (strlen(g_stratum_coin_include) && strstr(g_stratum_coin_include, row[20])))
+		   {
 			coind = new YAAMP_COIND;
 			memset(coind, 0, sizeof(YAAMP_COIND));
 
@@ -214,6 +216,9 @@ void db_update_coinds(YAAMP_DB *db)
 			coind->newblock = true;
 			coind->id = atoi(row[0]);
 			coind->aux.coind = coind;
+					   }
+		   else
+			continue;
 		}
 		else
 			coind->newcoind = false;
@@ -616,12 +621,4 @@ void db_store_stats(YAAMP_DB *db, YAAMP_CLIENT *client, json_value *stats)
 		t, g_current_algo->name, stype, sdev, sarch, svid, sos, sdriver,
 		sclient, khashes, freq, memf, realfreq, realmemf, power, plimit,
 		intensity, throughput, client->userid);
-}
-
-void db_insert_network_hash_info(YAAMP_DB *db, YAAMP_CLIENT *client, YAAMP_JOB_TEMPLATE* tmpl)
-{
-	/* ip to int */
-	{
-				
-	}	
 }
