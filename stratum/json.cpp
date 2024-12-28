@@ -1025,3 +1025,41 @@ json_value* json_get_val(json_value *obj, const char *key)
    return NULL;
 }
 
+json_value* json_new_object() {
+    json_value* obj = new json_value;
+    obj->type = json_object;
+    obj->u.object.length = 0;
+    obj->u.object.values = nullptr;
+    return obj;
+}
+
+void json_add_bool(json_value* obj, const char* name, bool value) {
+    if (!obj || obj->type != json_object) return;
+
+    // Add logic to dynamically grow the object values array
+    json_object_entry new_entry;
+    new_entry.name = strdup(name);
+    new_entry.value = new json_value;
+    new_entry.value->type = json_boolean;
+    new_entry.value->u.boolean = value;
+
+    obj->u.object.values = (json_object_entry*)realloc(
+        obj->u.object.values, sizeof(json_object_entry) * (obj->u.object.length + 1));
+    obj->u.object.values[obj->u.object.length++] = new_entry;
+}
+
+void json_add_string(json_value* obj, const char* name, const char* value) {
+    if (!obj || obj->type != json_object) return;
+
+    json_object_entry new_entry;
+    new_entry.name = strdup(name);
+    new_entry.value = new json_value;
+    new_entry.value->type = json_string;
+    new_entry.value->u.string = strdup(value);
+
+    obj->u.object.values = (json_object_entry*)realloc(
+        obj->u.object.values, sizeof(json_object_entry) * (obj->u.object.length + 1));
+    obj->u.object.values[obj->u.object.length++] = new_entry;
+}
+
+
