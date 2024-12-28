@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-#include "stratum.h"
+
 #ifndef _JSON_H
 #define _JSON_H
 
@@ -242,6 +242,8 @@ typedef struct _json_value
    #endif
 
 } json_value;
+
+struct YAAMP_CLIENT; // Vorwärtsdeklaration
 
 json_value * json_parse (const json_char * json,
                          size_t length);
