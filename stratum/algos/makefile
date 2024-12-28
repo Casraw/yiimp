@@ -1,12 +1,13 @@
 
-CC=gcc -g -ggdb
+CC=gcc
 
 #CFLAGS=-c -g -I /usr/include/mysql
 #LDFLAGS=-g
 
-CXXFLAGS = -O2 -I.. -march=native
+CXXFLAGS= -g2 -O2 -I.. -march=native
 CFLAGS= $(CXXFLAGS) -std=gnu99
-LDFLAGS=-O2 -lgmp
+LDFLAGS=-g2 -O2 -lgmp
+
 
 SOURCES=lyra2re.c lyra2v2.c Lyra2.c lyra2z.c lyra2z330.c Lyra2-z.c Sponge.c allium.c SWIFFTX/SWIFFTX.c lyra2vc0ban.c lyra2v3.c \
 	c11.c x11.c x12.c x13.c hsr14.c x14.c x15.c x17.c x17r.c x18.c x11k.c x11kvs.c x22.c \
@@ -29,8 +30,11 @@ SOURCES=lyra2re.c lyra2v2.c Lyra2.c lyra2z.c lyra2z330.c Lyra2-z.c Sponge.c alli
 	cryptonote/cryptonight_lite.c cryptonote/cryptonight_soft_shell.c cryptonote/cryptonight_turtle.c \
 	cryptonote/cryptonight_turtle_lite.c anime.c \
 	heavyhash/heavyhash.c heavyhash/keccak_tiny.c cosa.c 0x10.c mike.c sha512_256.c sha3d.c sha256dt.c skydoge.c
-	
-OBJECTS=$(SOURCES:%.c=%.o) $(SOURCES:%.cpp=%.o) $(SOURCES:%.cc=%.o)
+	argon2a.c ar2/blake2b.c ar2/argon2.c ar2/ref.c ar2/cores.c ar2/ar2-scrypt-jane.c \
+	hive.c pomelo.c hex.c \
+	phi.c phi2.c polytimos.c rainforest.c skunk.c sib.c veltor.c gost.c aergo.c
+
+OBJECTS=$(SOURCES:%.c=%.o) $(SOURCES:%.cpp=%.o)
 OUTPUT=libalgos.a
 
 all: $(SOURCES) $(OUTPUT)
@@ -57,3 +61,4 @@ clean:
 	rm -f honeycomb/*.o	
 	rm -f SWIFFTX/*.o	
 	rm -f yespower/*.o	
+

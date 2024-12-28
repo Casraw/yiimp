@@ -440,7 +440,7 @@ void binlify(unsigned char *bin, const char *hex)
 {
 	int len = strlen(hex);
 	for(int i=0; i<len/2; i++)
-		bin[i] = binvalue(hex[i*2])<<4 | binvalue(hex[i*2+1]);
+		bin[i] = (binvalue(hex[i*2])<<4) | binvalue(hex[i*2+1]);
 }
 
 void strprecatchar(char *buffer, char c)
@@ -477,26 +477,6 @@ void ser_number(int n, char *a)
 	}
 
 //	printf("ser_number %d, %s\n", n, a);
-}
-
-void ser_compactsize(uint64_t nSize, char *a)
-{
-	if (nSize < 253)
-	{
-		sprintf(a, "%02lx", nSize);
-	}
-	else if (nSize <= (unsigned short)-1)
-	{
-		sprintf(a, "%02x%04lx", 253, nSize);
-	}
-	else if (nSize <= (unsigned int)-1)
-	{
-		sprintf(a, "%02x%08lx", 254, nSize);
-	}
-	else
-	{
-		sprintf(a, "%02x%016lx", 255, nSize);
-	}
 }
 
 void ser_string_be(const char *input, char *output, int len)
@@ -576,31 +556,6 @@ uint64_t decode_compact(const char *input)
 //
 //	debuglog("decode_compact %s -> %016llx\n", input, v);
 	return v;
-}
-
-uint64_t sharetotarg(double diff)
-{
-        int i, shift = 29;
-        unsigned char targ[32];
-        for (i=0; i<32; i++)
-            targ[i]=0;
-        double ftarg = (double)0x0000ffff / diff;
-        while (ftarg < (double)0x00008000) {
-            shift--;
-            ftarg *= 256.0;
-        }
-        while (ftarg >= (double)0x00800000) {
-            shift++;
-            ftarg /= 256.0;
-        }
-        uint32_t nBits = (int)ftarg + (shift << 24);
-        shift = (nBits >> 24) & 0x00ff;
-        nBits &= 0x00FFFFFF;
-        targ[shift - 1] = nBits >> 16;
-        targ[shift - 2] = nBits >> 8;
-        targ[shift - 3] = nBits;
-        uint64_t starget = * (uint64_t *) &targ[24];
-        return (starget);
 }
 
 //def uint256_from_compact(c):
@@ -814,35 +769,37 @@ void sha256_hash_hex(const char *input, char *output, unsigned int len)
 	hexlify(output, (unsigned char *)output1, 32);
 }
 
-void sha3d_hash_hex(const char *input, char *output, unsigned int len)
-{
-	char output1[32];
+void ip_to_uint_le(uint32_t* uint_out, char* ip_in) {
+	UASSERT(uint_out != nullptr && ip_in != nullptr);	
 
-	sha3d_hash(input, output1, len);
-	hexlify(output, (unsigned char *)output1, 32);
-}
+	unsigned long int_ip = 0;
+	int c = 0;
+	const char* p = ip_in;
 
-uint64_t share_to_target(double diff)
-{
-        int i, shift = 29;
-        unsigned char targ[32];
-        for (i=0; i<32; i++)
-            targ[i]=0;
-        double ftarg = (double)0x0000ffff / diff;
-        while (ftarg < (double)0x00008000) {
-            shift--;
-            ftarg *= 256.0;
-        }
-        while (ftarg >= (double)0x00800000) {
-            shift++;
-            ftarg /= 256.0;
-        }
-        uint32_t nBits = (int)ftarg + (shift << 24);
-        shift = (nBits >> 24) & 0x00ff;
-        nBits &= 0x00FFFFFF;
-        targ[shift - 1] = nBits >> 16;
-        targ[shift - 2] = nBits >> 8;
-        targ[shift - 3] = nBits;
-        uint64_t starget = * (uint64_t *) &targ[24];
-        return (starget);
+	while (*p && c < 4) {
+		char x[4] = { 0 };
+		int y = 0;
+		
+		while (isdigit(*p)) {
+			x[y] = *p;
+
+			y++;
+			p++;
+		}
+
+		UASSERT(y <= 3);
+
+		unsigned long byte_offset = (3 - c) << 3;
+		int_ip |= (strtoul(x, nullptr, 10) & 0xFF) << byte_offset;
+		
+		c++;
+
+		if (*p) {
+			p++;
+		}
+	}
+
+	UASSERT(c == 4);
+
+	*uint_out = (uint32_t)int_ip;	
 }

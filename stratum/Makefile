@@ -1,15 +1,34 @@
 
-CC= gcc -no-pie
+CC=gcc
 
-CFLAGS= -g -march=native
 SQLFLAGS= `mysql_config --cflags --libs`
+AUXCFLAGS=
+
+ifdef TEST_NETWORK_HASH
+	AUXCFLAGS=-DTEST_NETWORK_HASH
+endif
+
+ifdef DEBUGSYM
+	AUXCFLAGS=$(AUXCFLAGS) -DDB_DEBUG_LYRA -DSHARE_DEBUG -DCOINDSUBMIT_DEBUG -DCLIENTSUBMIT_DEBUG -g -ggdb
+	AUXLDFLAGS=-g
+else
+	AUXCFLAGS=$(AUXCFLAGS) -g2 -O2
+	AUXLDFLAGS=-g2 -O2
+endif
+
+export AUXCFLAGS
+export AUXLDFLAGS
+
+CFLAGS=$(AUXCFLAGS) -march=native
 
 # Comment this line to disable address check on login,
 # if you use the auto exchange feature...
 CFLAGS += -DNO_EXCHANGE
 
 #CFLAGS=-c -O2 -I /usr/include/mysql
-LDFLAGS=-O2 `mysql_config --libs`
+LDFLAGS=$(AUXLDFLAGS) `mysql_config --libs`
+
+
 
 LDLIBS=iniparser/libiniparser.a algos/libalgos.a sha3/libhash.a -Isecp256k1/include secp256k1/.libs/libsecp256k1.a -lpthread -lgmp -lm -lstdc++ -lssl -lcrypto 
 LDLIBS+=-lmysqlclient
@@ -32,7 +51,6 @@ CODEDIR2=sha3
 CODEDIR3=iniparser
 CODEDIR4=secp256k1
 
-
 .PHONY: projectcode1 projectcode2 projectcode3 projectcode4
 
 all: projectcode1 projectcode2 projectcode3 projectcode4 $(SOURCES) $(OUTPUT)
@@ -42,7 +60,7 @@ projectcode1:
 
 projectcode2:
 	$(MAKE) -C $(CODEDIR2)
-	
+
 projectcode3:
 	$(MAKE) -C $(CODEDIR3)
 
@@ -72,7 +90,7 @@ clean:
 	rm -f algos/honeycomb/*.o
 	rm -f algos/SWIFFTX/*.o
 	rm -f algos/yespower/*.o
-	
+
 install: clean all
 	strip -s stratum
 	cp stratum /usr/local/bin/

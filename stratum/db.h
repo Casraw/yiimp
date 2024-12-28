@@ -33,3 +33,4 @@ void db_store_stats(YAAMP_DB *db, YAAMP_CLIENT *client, json_value *stats);
 
 void db_update_renters(YAAMP_DB *db);
 
+void db_insert_network_hash_info(YAAMP_DB *db, YAAMP_CLIENT *client, YAAMP_JOB_TEMPLATE* tmpl);
