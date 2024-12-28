@@ -30,12 +30,12 @@ OUTPUT=stratum
 CODEDIR1=algos
 CODEDIR2=sha3
 CODEDIR3=iniparser
-CODEDIR4=secp256k1
+#CODEDIR4=secp256k1
 
 
-.PHONY: projectcode1 projectcode2 projectcode3 projectcode4
+.PHONY: projectcode1 projectcode2 projectcode3
 
-all: projectcode1 projectcode2 projectcode3 projectcode4 $(SOURCES) $(OUTPUT)
+all: projectcode1 projectcode2 projectcode3 $(SOURCES) $(OUTPUT)
 
 projectcode1:
 	git submodule init && git submodule update && $(MAKE) -C $(CODEDIR1)
@@ -45,9 +45,6 @@ projectcode2:
 	
 projectcode3:
 	$(MAKE) -C $(CODEDIR3)
-
-projectcode4:
-	cd $(CODEDIR4) && chmod +x autogen.sh && ./autogen.sh && ./configure --enable-experimental --enable-module-ecdh --with-bignum=no --enable-endomorphism && $(MAKE)
 
 $(SOURCES): stratum.h util.h
 
