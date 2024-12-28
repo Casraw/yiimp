@@ -39,11 +39,9 @@ class YAAMP_CLIENT: public YAAMP_OBJECT
 public:
 	YAAMP_SOCKET *sock;
 //	YAAMP_SOURCE *source;
-    int id_int;
-    int reqid;
-
 
 	char notify_id[1024];
+	int64_t reqid; // ask request id
 	int created;
 	int last_best;
 
