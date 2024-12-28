@@ -34,8 +34,6 @@
 #include "../blake2/blake2.h"
 #include "../blake2/blake2-impl.h"
 
-#define ARGON2_THREAD_FAIL 1
-
 #if defined(__clang__)
 #if __has_attribute(optnone)
 #define NOT_OPTIMIZED __attribute__((optnone))
