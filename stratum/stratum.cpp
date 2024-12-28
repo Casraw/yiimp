@@ -77,6 +77,33 @@ void *stratum_thread(void *p);
 void *monitor_thread(void *p);
 
 ////////////////////////////////////////////////////////////////////////////////////////
+//mining.configure
+void handle_mining_configure(YAAMP_CLIENT *client, json_value *json)
+{
+    if (!client || !json) return;
+
+    // Werte aus der JSON-Anfrage extrahieren
+    json_value *params = json_get_array(json, "params");
+    if (!params) return;
+
+    // Beispiel: Extrahiere Parameter, die vom Miner geschickt werden
+    json_value *param = json_get_object(params, 0);
+    if (param) {
+        // Hier kannst du die Parameter verarbeiten und entsprechend konfigurieren
+        // Beispiel: Ändere Einstellungen des Miners
+        client->some_config = param->u.string;
+    }
+
+    // Sende eine Antwort zurück an den Miner
+    json_value *response = json_new_object();
+    json_add_string(response, "id", json_get_string(json, "id"));
+    json_add_string(response, "result", "success");
+    json_add_string(response, "method", "mining.configure");
+
+    // Antwort zurück an den Miner senden
+    stratum_send_json(client, response);
+    json_value_free(response);
+}
 
 static void scrypt_hash(const char* input, char* output, uint32_t len)
 {
@@ -474,55 +501,61 @@ void *monitor_thread(void *p)
 
 void *stratum_thread(void *p)
 {
-	int listen_sock = socket(AF_INET, SOCK_STREAM, 0);
-	if(listen_sock <= 0) yaamp_error("socket");
+    int listen_sock = socket(AF_INET, SOCK_STREAM, 0);
+    if(listen_sock <= 0) yaamp_error("socket");
 
-	int optval = 1;
-	setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
+    int optval = 1;
+    setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
 
-	struct sockaddr_in serv;
+    struct sockaddr_in serv;
 
-	serv.sin_family = AF_INET;
-	serv.sin_addr.s_addr = htonl(INADDR_ANY);
-	serv.sin_port = htons(g_tcp_port);
+    serv.sin_family = AF_INET;
+    serv.sin_addr.s_addr = htonl(INADDR_ANY);
+    serv.sin_port = htons(g_tcp_port);
 
-	int res = bind(listen_sock, (struct sockaddr*)&serv, sizeof(serv));
-	if(res < 0) yaamp_error("bind");
+    int res = bind(listen_sock, (struct sockaddr*)&serv, sizeof(serv));
+    if(res < 0) yaamp_error("bind");
 
-	res = listen(listen_sock, 4096);
-	if(res < 0) yaamp_error("listen");
+    res = listen(listen_sock, 4096);
+    if(res < 0) yaamp_error("listen");
 
-	/////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
-	int failcount = 0;
-	while(!g_exiting)
-	{
-		int sock = accept(listen_sock, NULL, NULL);
-		if(sock <= 0)
-		{
-			int error = errno;
-			stratumlog("%s socket accept() error %d\n", g_stratum_algo, error);
-			failcount++;
-			usleep(50000);
-			if (error == 24 && failcount > 5) {
-				g_exiting = true; // happen when max open files is reached (see ulimit)
-				stratumlogdate("%s too much socket failure, exiting...\n", g_stratum_algo);
-				exit(error);
-			}
-			continue;
-		}
+    int failcount = 0;
+    while(!g_exiting)
+    {
+        int sock = accept(listen_sock, NULL, NULL);
+        if(sock <= 0)
+        {
+            int error = errno;
+            stratumlog("%s socket accept() error %d\n", g_stratum_algo, error);
+            failcount++;
+            usleep(50000);
+            if (error == 24 && failcount > 5) {
+                g_exiting = true; // happen when max open files is reached (see ulimit)
+                stratumlogdate("%s too much socket failure, exiting...\n", g_stratum_algo);
+                exit(error);
+            }
+            continue;
+        }
 
-		failcount = 0;
-		pthread_t thread;
-		int res = pthread_create(&thread, NULL, client_thread, (void *)(long)sock);
-		if(res != 0)
-		{
-			int error = errno;
-			close(sock);
-			g_exiting = true;
-			stratumlog("%s pthread_create error %d %d\n", g_stratum_algo, res, error);
-		}
+        failcount = 0;
+        
+        // Neues Thread für jeden Client starten
+        pthread_t thread;
+        int res = pthread_create(&thread, NULL, client_thread, (void *)(long)sock);
+        if(res != 0)
+        {
+            int error = errno;
+            close(sock);
+            g_exiting = true;
+            stratumlog("%s pthread_create error %d %d\n", g_stratum_algo, res, error);
+        }
 
-		pthread_detach(thread);
-	}
+        pthread_detach(thread);
+    }
+
+    // Stratum-Server muss so lange laufen, bis g_exiting auf true gesetzt wird
+    close(listen_sock);
 }
+
