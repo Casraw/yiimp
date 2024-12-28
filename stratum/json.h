@@ -278,6 +278,14 @@ int json_integer_value(const json_value *json);
 char* json_string_value(const json_value *json);
 double json_double_value(const json_value *json);
 
+json_value* json_new_object();
+void json_add_bool(json_value* obj, const char* name, bool value);
+void json_add_string(json_value* obj, const char* name, const char* value);
+const char* json_get_string_value(const json_value* obj, const char* name, const char* default_value);
+void json_add_null(json_value* obj, const char* name);
+void json_add_value(json_value* obj, const char* name, json_value* value);
+void stratum_send_json(YAAMP_CLIENT* client, json_value* response);
+
 #ifdef __cplusplus
    } /* extern "C" */
 #endif

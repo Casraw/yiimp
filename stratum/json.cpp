@@ -1062,4 +1062,52 @@ void json_add_string(json_value* obj, const char* name, const char* value) {
     obj->u.object.values[obj->u.object.length++] = new_entry;
 }
 
+const char* json_get_string_value(const json_value* obj, const char* name, const char* default_value) {
+    if (!obj || obj->type != json_object) return default_value;
+
+    for (size_t i = 0; i < obj->u.object.length; ++i) {
+        if (strcmp(obj->u.object.values[i].name, name) == 0) {
+            if (obj->u.object.values[i].value->type == json_string) {
+                return obj->u.object.values[i].value->u.string;
+            }
+        }
+    }
+    return default_value;
+}
+
+void json_add_null(json_value* obj, const char* name) {
+    if (!obj || obj->type != json_object) return;
+
+    json_object_entry new_entry;
+    new_entry.name = strdup(name);
+    new_entry.value = new json_value;
+    new_entry.value->type = json_null;
+
+    obj->u.object.values = (json_object_entry*)realloc(
+        obj->u.object.values, sizeof(json_object_entry) * (obj->u.object.length + 1));
+    obj->u.object.values[obj->u.object.length++] = new_entry;
+}
+
+void json_add_value(json_value* obj, const char* name, json_value* value) {
+    if (!obj || obj->type != json_object || !value) return;
+
+    json_object_entry new_entry;
+    new_entry.name = strdup(name);
+    new_entry.value = value;
+
+    obj->u.object.values = (json_object_entry*)realloc(
+        obj->u.object.values, sizeof(json_object_entry) * (obj->u.object.length + 1));
+    obj->u.object.values[obj->u.object.length++] = new_entry;
+}
+
+void stratum_send_json(YAAMP_CLIENT* client, json_value* response) {
+    if (!client || !response) return;
+
+    char* json_str = json_serialize_to_string(response);
+    if (!json_str) return;
+
+    socket_send(client->sock, json_str, strlen(json_str));
+    json_free_serialized_string(json_str);
+}
+
 
