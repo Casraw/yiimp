@@ -2,6 +2,7 @@
 #include "stratum.h"
 #include <signal.h>
 #include <sys/resource.h>
+#include <json.h>
 
 CommonList g_list_coind;
 CommonList g_list_client;
