@@ -25,7 +25,6 @@ LDCURL = $(shell /usr/bin/pkg-config --static --libs libcurl)
 LDFLAGS += $(LDCURL)
 
 OBJECTS=$(SOURCES:.cpp=.o)
-OBJECTS += json.o
 OUTPUT=stratum
 
 CODEDIR1=algos
