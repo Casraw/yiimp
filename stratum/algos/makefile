@@ -26,7 +26,7 @@ whirlpool.c blake2b.c skein.c lyra2re.c honeycomb/facet_one.c \
 honeycomb/facet_six.c honeycomb/facet_four.c honeycomb/facet_five.c honeycomb/facets_helper.c honeycomb/facet_three.c honeycomb/facet_two.c \
 beenode.c blake2-ref/blake2s.c blake2-ref/blake2b.c sha256q.c phi.c \
 x20r.c balloon.c sha3d.c x11k.c lyra2z.c x15.c \
-x11evo.c sm3.c drop.c argon2d/argon2.c argon2d/opt.c argon2d/thread.c \
+x11evo.c drop.c argon2d/argon2.c argon2d/opt.c argon2d/thread.c \
 argon2d/encoding.c argon2d/core.c lyra2z330.c deep.c hive.c \
 blake2/blake2b.c groestl.c yescrypt-platform.c memehash.c megamec.c blakecoin.c \
 yespower/yespower-combined.c yespower/crypto/blake2b-yp.c yespower/yespower-platform.c yespower/yespower-blake2b.c bmw.c x18.c \
