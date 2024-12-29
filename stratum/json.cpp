@@ -35,7 +35,20 @@
 #include <unistd.h>      // For close()
 #include <cstring>       // For strlen()
 #include "client.h"      // For YAAMP_CLIENT
+#include <string.h>
+#include <stdlib.h>
 
+// Implementation of json_get_val
+json_value* json_get_val(json_value* obj, const char* key) {
+    if (obj->type != JSON_OBJECT) return NULL;
+
+    for (unsigned int i = 0; i < obj->u.object.length; i++) {
+        if (!strcmp(obj->u.object.values[i].name, key)) {
+            return obj->u.object.values[i].value;
+        }
+    }
+    return NULL;
+}
 
 #ifdef _MSC_VER
    #ifndef _CRT_SECURE_NO_WARNINGS

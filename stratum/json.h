@@ -29,17 +29,78 @@
  */
 #pragma once
 
-typedef enum
-{
-   json_none = 0,
-   json_object,
-   json_array,
-   json_integer,
-   json_double,
-   json_string,
-   json_boolean,
-   json_null
+#ifndef JSON_H
+#define JSON_H
+
+// Define JSON types
+typedef enum {
+    json_null,
+    json_boolean,
+    json_integer,
+    json_double,
+    json_string,
+    json_array,
+    JSON_OBJECT  // Renamed to avoid conflict with other uses of "json_object"
 } json_type;
+
+// Forward declaration of _JsonValue
+struct _JsonValue;
+
+// Define object entry structure
+typedef struct _JsonObjectEntry {
+    char* name;                   // Key name for objects
+    unsigned int name_length;     // Length of the key name
+    struct _JsonValue* value;     // Pointer to the value associated with the key
+} JsonObjectEntry;
+
+// Define JSON value structure and typedef it as 'json_value'
+typedef struct _JsonValue {
+    struct _JsonValue* parent;   // Parent node in the JSON tree
+    json_type type;              // Type of JSON value (e.g., object, array, string)
+
+    union {
+        int boolean;
+        long long integer;
+        double dbl;
+
+        struct {
+            unsigned int length;
+            char* ptr;           // Null-terminated string pointer
+        } string;
+
+        struct {
+            unsigned int length;
+            JsonObjectEntry* values;  // Array of object entries (key-value pairs)
+        } object;
+
+        struct {
+            unsigned int length;
+            struct _JsonValue** values;  // Array of pointers to JSON values
+        } array;
+    } u;
+
+    union {
+        struct _JsonValue* next_alloc;
+        void* object_mem;
+    } _reserved;
+
+} JsonValue;
+
+// Typedef for convenience
+typedef struct _JsonValue json_value;
+
+// Declare a constant placeholder for invalid JSON values
+extern const json_value json_value_none;
+
+// Function declarations using 'json_value'
+json_value* json_get_val(json_value* obj, const char* key);
+void json_add_bool(json_value* obj, const char* name, bool value);
+void json_add_string(json_value* obj, const char* name, const char* value);
+void json_add_null(json_value* obj, const char* name);
+void json_add_value(json_value* obj, const char* name, json_value* value);
+
+#endif // JSON_H
+
 
 #ifndef JSON_H
 #define JSON_H
@@ -229,6 +290,14 @@ double json_get_double_value(json_value* obj, const char* key, double default_va
 void json_add_value(json_value* obj, const char* key, json_value* value);
 const char* json_get_string_value(json_value* obj, const char* key, const char* default_value);
 void json_debug(json_value* obj);
+
+// Function declarations using json_value
+json_value* json_get_val(json_value* obj, const char* key);
+void json_add_bool(json_value* obj, const char* name, bool value);
+void json_add_string(json_value* obj, const char* name, const char* value);
+void json_add_null(json_value* obj, const char* name);
+void json_add_value(json_value* obj, const char* name, json_value* value);
+
 
 #ifdef __cplusplus
    } /* extern "C" */
