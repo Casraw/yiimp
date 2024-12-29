@@ -85,47 +85,6 @@ typedef struct _json_object_entry {
     struct _json_value* value;
 } json_object_entry;
 
-typedef struct _json_value {
-    union {
-        struct {
-            unsigned int length;
-            json_object_entry* values; // For objects
-        } object;
-        struct {
-            unsigned int length;
-            struct _json_value** values; // For arrays
-        } array;
-        struct {
-            char* ptr; // For strings
-            unsigned int length;
-        } string;
-        double dbl; // For numbers
-        int boolean; // For booleans
-    } u;
-    int type; // Type of JSON value (e.g., object, array, string, etc.)
-    struct _json_value* parent; // Parent node in the JSON tree
-} json_value;
-
-#endif // JSON_H
-
-#define json_enable_comments  0x01
-
-typedef enum
-{
-   json_none = 0,
-   json_object,
-   json_array,
-   json_integer,
-   json_double,
-   json_string,
-   json_boolean,
-   json_null
-
-} json_type;
-
-#ifndef JSON_H
-#define JSON_H
-
 typedef struct _json_object_entry {
     char* name;                   // Key name for objects
     unsigned int name_length;     // Length of the key name
@@ -204,13 +163,28 @@ public:
 
 } json_value;
 
-#endif // JSON_H
-
 #ifdef __cplusplus
 const struct _json_value json_value_none;
 #else
 const struct _json_value json_value_none = {0};
 #endif
+
+#endif // JSON_H
+
+#define json_enable_comments  0x01
+
+typedef enum
+{
+   json_none = 0,
+   json_object,
+   json_array,
+   json_integer,
+   json_double,
+   json_string,
+   json_boolean,
+   json_null
+
+} json_type;
 
 struct YAAMP_CLIENT; // Vorwärtsdeklaration
 
