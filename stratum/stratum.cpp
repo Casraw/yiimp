@@ -86,7 +86,7 @@ void handle_mining_configure(YAAMP_CLIENT *client, json_value *json) {
     json_value *extensions = params->u.array.values[0];
     json_value *ext_params = params->u.array.values[1];
 
-    if (extensions->type != json_array || ext_params->type != json_object) return;
+    if (extensions->type != json_array || ext_params->type != JSON_OBJECT) return;
 
     // Prepare response map
     json_value *result = json_new_object();
