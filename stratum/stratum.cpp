@@ -1,8 +1,9 @@
-
+#pragma once
 #include "stratum.h"
 #include <signal.h>
 #include <sys/resource.h>
 #include "json.h"
+#include "client.h"
 
 CommonList g_list_coind;
 CommonList g_list_client;
@@ -79,11 +80,10 @@ void *monitor_thread(void *p);
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //mining.configure
-void handle_mining_configure(YAAMP_CLIENT *client, json_value *json)
-{
+void handle_mining_configure(YAAMP_CLIENT *client, json_value *json) {
     if (!client || !json) return;
 
-    // Parameter aus der Anfrage extrahieren
+    // Extract parameters from the request
     json_value *params = json_get_array(json, "params");
     if (!params || params->u.array.length < 2) return;
 
@@ -92,39 +92,42 @@ void handle_mining_configure(YAAMP_CLIENT *client, json_value *json)
 
     if (extensions->type != json_array || ext_params->type != json_object) return;
 
-    // Antwort-Map vorbereiten
+    // Prepare response map
     json_value *result = json_new_object();
 
-    // Unterstützte Erweiterungen verarbeiten
+    // Process supported extensions
     for (int i = 0; i < extensions->u.array.length; i++) {
-        const char *ext = extensions->u.array.values[i]->u.string;
+        json_value *extension = extensions->u.array.values[i];
+        if (extension->type == json_string) { // Check if it's a string
+            const char *ext = extension->u.string.ptr; // Access safely
 
-        if (strcmp(ext, "version-rolling") == 0) {
-            const char *mask = json_get_string_value(ext_params, "version-rolling.mask", "ffffffff");
-            int min_bit_count = json_get_int_value(ext_params, "version-rolling.min-bit-count", 2);
+            if (strcmp(ext, "version-rolling") == 0) {
+                const char *mask = json_get_string_value(ext_params, "version-rolling.mask", "ffffffff");
+                int min_bit_count = json_get_int_value(ext_params, "version-rolling.min-bit-count", 2);
 
-            // Beispiel: Definiere eine serverseitige Maske für Version Rolling
-            const char *server_mask = "00fff000";
-            if (min_bit_count <= 12) {
-                json_add_bool(result, "version-rolling", true);
-                json_add_string(result, "version-rolling.mask", server_mask);
+                // Example: Define a server-side mask for version rolling
+                const char *server_mask = "00fff000";
+                if (min_bit_count <= 12) {
+                    json_add_bool(result, "version-rolling", true);
+                    json_add_string(result, "version-rolling.mask", server_mask);
+                } else {
+                    json_add_string(result, "version-rolling", "Requested min-bit-count too high");
+                }
+            } else if (strcmp(ext, "minimum-difficulty") == 0) {
+                double min_diff = json_get_double_value(ext_params, "minimum-difficulty.value", 0.0);
+                if (min_diff >= 0.0) {
+                    json_add_bool(result, "minimum-difficulty", true);
+                } else {
+                    json_add_string(result, "minimum-difficulty", "Invalid difficulty value");
+                }
             } else {
-                json_add_string(result, "version-rolling", "Requested min-bit-count too high");
+                // Unknown extension
+                json_add_bool(result, ext, false);
             }
-        } else if (strcmp(ext, "minimum-difficulty") == 0) {
-            double min_diff = json_get_double_value(ext_params, "minimum-difficulty.value", 0.0);
-            if (min_diff >= 0.0) {
-                json_add_bool(result, "minimum-difficulty", true);
-            } else {
-                json_add_string(result, "minimum-difficulty", "Invalid difficulty value");
-            }
-        } else {
-            // Unbekannte Erweiterung
-            json_add_bool(result, ext, false);
         }
     }
 
-    // Antwort erstellen und zurücksenden
+    // Create and send response
     json_value *response = json_new_object();
     json_add_null(response, "error");
     json_add_value(response, "id", json_get_val(json, "id"));
@@ -133,8 +136,6 @@ void handle_mining_configure(YAAMP_CLIENT *client, json_value *json)
     stratum_send_json(client, response);
     json_value_free(response);
 }
-
-
 
 static void scrypt_hash(const char* input, char* output, uint32_t len)
 {

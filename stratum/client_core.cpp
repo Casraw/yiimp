@@ -1,4 +1,5 @@
 
+#pragma once
 #include "stratum.h"
 
 static int g_extraonce1_counter = 0;

@@ -27,9 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#include "client.h" // Falls die Datei lokal ist
-
+#pragma once
 #ifndef _JSON_H
 #define _JSON_H
 
@@ -71,6 +69,21 @@ typedef struct
    void * user_data;  /* will be passed to mem_alloc and mem_free */
 
 } json_settings;
+
+#ifndef JSON_H
+#define JSON_H
+
+// Definitions and declarations go here
+typedef struct _json_object_entry {
+    char* name;
+    unsigned int name_length;
+    struct _json_value* value;
+} json_object_entry;
+
+// Other typedefs and declarations...
+
+#endif // JSON_H
+
 
 #define json_enable_comments  0x01
 
@@ -293,7 +306,6 @@ double json_get_double_value(json_value* obj, const char* key, double default_va
 void json_add_value(json_value* obj, const char* key, json_value* value);
 const char* json_get_string_value(json_value* obj, const char* key, const char* default_value);
 void json_debug(json_value* obj);
-
 
 #ifdef __cplusplus
    } /* extern "C" */

@@ -1068,12 +1068,14 @@ const char* json_get_string_value(const json_value* obj, const char* name, const
     for (size_t i = 0; i < obj->u.object.length; ++i) {
         if (strcmp(obj->u.object.values[i].name, name) == 0) {
             if (obj->u.object.values[i].value->type == json_string) {
-                return obj->u.object.values[i].value->u.string;
+                // Access the string value safely
+                return obj->u.object.values[i].value->u.string.ptr; // Use .ptr if u.string is a struct
             }
         }
     }
     return default_value;
 }
+
 
 void json_add_null(json_value* obj, const char* name) {
     if (!obj || obj->type != json_object) return;

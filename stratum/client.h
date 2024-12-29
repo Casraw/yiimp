@@ -7,6 +7,7 @@
 //
 //	char ip[64];
 //};
+#pragma once
 
 struct YAAMP_ALGO
 {
