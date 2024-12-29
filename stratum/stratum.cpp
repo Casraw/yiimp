@@ -2,11 +2,7 @@
 #include "stratum.h"
 #include <signal.h>
 #include <sys/resource.h>
-#ifndef JSON_H
-#define JSON_H
-#include "json.h" // Falls die Datei lokal ist
-#endif
-
+#include "json.h"
 
 CommonList g_list_coind;
 CommonList g_list_client;
