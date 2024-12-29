@@ -284,14 +284,12 @@ json_value* json_new_object();
 json_value* json_get_val(json_value* obj, const char* key);
 void json_add_bool(json_value* obj, const char* name, bool value);
 void json_add_string(json_value* obj, const char* name, const char* value);
-const char* json_get_string_value(const json_value* obj, const char* name, const char* default_value);
 void json_add_null(json_value* obj, const char* name);
-void json_add_value(json_value* obj, const char* name, json_value* value);
 void stratum_send_json(YAAMP_CLIENT* client, json_value* response);
 
 int json_get_int_value(json_value* obj, const char* key, int default_value);
 double json_get_double_value(json_value* obj, const char* key, double default_value);
-const char* json_get_string_value(json_value* obj, const char* key, const char* default_value);
+void json_add_value(json_value* obj, const char* key, json_value* value);
 const char* json_get_string_value(json_value* obj, const char* key, const char* default_value);
 void json_debug(json_value* obj);
 
