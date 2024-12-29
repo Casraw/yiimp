@@ -32,6 +32,10 @@
 #ifndef JSON_H
 #define JSON_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Define JSON types
 typedef enum {
     json_null,
@@ -99,20 +103,9 @@ void json_add_string(json_value* obj, const char* name, const char* value);
 void json_add_null(json_value* obj, const char* name);
 void json_add_value(json_value* obj, const char* name, json_value* value);
 
-#endif // JSON_H
-
-
-#ifndef JSON_H
-#define JSON_H
-
-// Declare the constant placeholder for invalid JSON values
 #ifdef __cplusplus
-extern const struct _json_value json_value_none; /* Zero-initialized by constructor */
-#else
-extern const struct _json_value json_value_none = { 0 };  /* Explicitly zero-initialized */
+}
 #endif
-
-// Other declarations...
 
 #endif // JSON_H
 
