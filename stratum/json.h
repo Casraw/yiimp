@@ -80,12 +80,6 @@ extern const struct _json_value json_value_none; // Declared for C
 #endif
 
 typedef struct _json_object_entry {
-    char* name;
-    unsigned int name_length;
-    struct _json_value* value;
-} json_object_entry;
-
-typedef struct _json_object_entry {
     char* name;                   // Key name for objects
     unsigned int name_length;     // Length of the key name
     struct _json_value* value;    // Pointer to the value associated with the key
