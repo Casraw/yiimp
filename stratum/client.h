@@ -8,8 +8,6 @@
 //	char ip[64];
 //};
 
-typedef void (*YAAMP_HASH_FUNCTION)(const char *, char *, uint32_t);
-
 struct YAAMP_ALGO
 {
 	char name[64];
