@@ -27,10 +27,8 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-#ifndef CLIENT_H
-#define CLIENT_H
+
 #include "client.h" // Falls die Datei lokal ist
-#endif
 
 #ifndef _JSON_H
 #define _JSON_H
