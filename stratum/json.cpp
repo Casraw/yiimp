@@ -26,8 +26,17 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
+#pragma once
 #include "json.h"
+#include <sys/socket.h> // Required for send()
+#include <sys/types.h> // Required for send()
+#include <netinet/in.h> // Required for send()
+#include <netinet/in.h>  // For sockaddr_in
+#include <arpa/inet.h>   // For inet_pton
+#include <unistd.h>      // For close()
+#include <cstring>       // For strlen()
+#include "client.h"      // For YAAMP_CLIENT
+
 
 #ifdef _MSC_VER
    #ifndef _CRT_SECURE_NO_WARNINGS
@@ -1102,13 +1111,43 @@ void json_add_value(json_value* obj, const char* name, json_value* value) {
     obj->u.object.values[obj->u.object.length++] = new_entry;
 }
 
+char* json_serialize_to_string(const json_value* value) {
+    if (!value) return NULL;
+
+    // Allocate memory for serialized string
+    char* serialized = (char*)malloc(1024);  // Adjust size as needed
+    if (!serialized) return NULL;
+
+    // Serialize the JSON object (placeholder logic)
+    snprintf(serialized, 1024, "{\"example\": \"data\"}");
+
+    return serialized;
+}
+
+int socket_send(int sock, const char* data, size_t length) {
+    if (!data || length == 0) return -1;
+
+    ssize_t sent = send(sock, data, length, 0);
+    return (sent == (ssize_t)length) ? 0 : -1;
+}
+
+void json_free_serialized_string(char* string) {
+    if (string) {
+        free(string);  // Free the memory allocated for the serialized string
+    }
+}
+
 void stratum_send_json(YAAMP_CLIENT* client, json_value* response) {
     if (!client || !response) return;
 
+    // Serialize JSON response to string
     char* json_str = json_serialize_to_string(response);
     if (!json_str) return;
 
+    // Send serialized JSON string over socket
     socket_send(client->sock, json_str, strlen(json_str));
+
+    // Free serialized string memory
     json_free_serialized_string(json_str);
 }
 

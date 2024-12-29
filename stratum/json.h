@@ -70,20 +70,12 @@ typedef struct
 
 } json_settings;
 
-#ifndef JSON_H
-#define JSON_H
-
 // Definitions and declarations go here
 typedef struct _json_object_entry {
     char* name;
     unsigned int name_length;
     struct _json_value* value;
 } json_object_entry;
-
-// Other typedefs and declarations...
-
-#endif // JSON_H
-
 
 #define json_enable_comments  0x01
 
