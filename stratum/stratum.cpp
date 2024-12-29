@@ -76,24 +76,24 @@ volatile bool g_exiting = false;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //mining.configure
-void handle_mining_configure(YAAMP_CLIENT *client, _json_value *json) {
+void handle_mining_configure(YAAMP_CLIENT *client, json_value *json) {
     if (!client || !json) return;
 
     // Extract parameters from the request
-    _json_value *params = json_get_array(json, "params");
+    json_value *params = json_get_array(json, "params");
     if (!params || params->u.array.length < 2) return;
 
-    _json_value *extensions = params->u.array.values[0];
-    _json_value *ext_params = params->u.array.values[1];
+    json_value *extensions = params->u.array.values[0];
+    json_value *ext_params = params->u.array.values[1];
 
     if (extensions->type != json_array || ext_params->type != json_object) return;
 
     // Prepare response map
-    _json_value *result = json_new_object();
+    json_value *result = json_new_object();
 
     // Process supported extensions
     for (int i = 0; i < extensions->u.array.length; i++) {
-        _json_value *extension = extensions->u.array.values[i];
+        json_value *extension = extensions->u.array.values[i];
         if (extension->type == json_string) { // Check if it's a string
             const char *ext = extension->u.string.ptr; // Access safely
 
@@ -124,7 +124,7 @@ void handle_mining_configure(YAAMP_CLIENT *client, _json_value *json) {
     }
 
     // Create and send response
-    _json_value *response = json_new_object();
+    json_value *response = json_new_object();
     json_add_null(response, "error");
     json_add_value(response, "id", json_get_val(json, "id"));
     json_add_value(response, "result", result);
