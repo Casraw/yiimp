@@ -48,7 +48,7 @@ typedef enum
 #ifdef __cplusplus
 extern const struct _json_value json_value_none; /* Zero-initialized by constructor */
 #else
-extern const struct _json_value json_value_none; /* Explicitly zero-initialized */
+extern const struct _json_value json_value_none = { 0 };  /* Explicitly zero-initialized */
 #endif
 
 // Other declarations...
