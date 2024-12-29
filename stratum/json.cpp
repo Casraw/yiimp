@@ -109,9 +109,9 @@ static void * json_alloc (json_state * state, unsigned long size, int zero)
 }
 
 static int new_value
-   (json_state * state, json_value ** top, json_value ** root, json_value ** alloc, json_type type)
+   (json_state * state, _json_value ** top, _json_value ** root, _json_value ** alloc, json_type type)
 {
-   json_value * value;
+   _json_value * value;
    int values_size;
 
    if (!state->first_pass)
@@ -126,8 +126,8 @@ static int new_value
       {
          case json_array:
 
-            if (! (value->u.array.values = (json_value **) json_alloc
-               (state, value->u.array.length * sizeof (json_value *), 0)) )
+            if (! (value->u.array.values = (_json_value **) json_alloc
+               (state, value->u.array.length * sizeof (_json_value *), 0)) )
             {
                return 0;
             }
@@ -168,7 +168,7 @@ static int new_value
       return 1;
    }
 
-   value = (json_value *) json_alloc (state, sizeof (json_value), 1);
+   value = (_json_value *) json_alloc (state, sizeof (_json_value), 1);
 
    if (!value)
       return 0;
@@ -214,7 +214,7 @@ static const long
    flag_line_comment     = 1 << 13,
    flag_block_comment    = 1 << 14;
 
-json_value * json_parse_ex (json_settings * settings,
+_json_value * json_parse_ex (json_settings * settings,
                             const json_char * json,
                             size_t length,
                             char * error_buf)
@@ -222,7 +222,7 @@ json_value * json_parse_ex (json_settings * settings,
    json_char error [json_error_max];
    unsigned int cur_line;
    const json_char * cur_line_begin, * i, * end;
-   json_value * top, * root, * alloc = 0;
+   _json_value * top, * root, * alloc = 0;
    json_state state = { 0 };
    long flags;
    long num_digits = 0, num_e = 0;
@@ -845,7 +845,7 @@ json_value * json_parse_ex (json_settings * settings,
 
             if (!state.first_pass)
             {
-               json_value * parent = top->parent;
+               _json_value * parent = top->parent;
 
                switch (parent->type)
                {
@@ -923,15 +923,15 @@ e_failed:
    return 0;
 }
 
-json_value * json_parse (const json_char * json, size_t length)
+_json_value * json_parse (const json_char * json, size_t length)
 {
    json_settings settings = { 0 };
    return json_parse_ex (&settings, json, length, 0);
 }
 
-void json_value_free_ex (json_settings * settings, json_value * value)
+void json_value_free_ex (json_settings * settings, _json_value * value)
 {
-   json_value * cur_value;
+   _json_value * cur_value;
 
    if (!value)
       return;
@@ -979,19 +979,19 @@ void json_value_free_ex (json_settings * settings, json_value * value)
    }
 }
 
-void json_value_free (json_value * value)
+void json_value_free (_json_value * value)
 {
    json_settings settings = { 0 };
    settings.mem_free = default_free;
    json_value_free_ex (&settings, value);
 }
 
-char* json_dumps(json_value * value, int opt)
+char* json_dumps(_json_value * value, int opt)
 {
    return strdup(""); // unsupported
 }
 
-int json_integer_value(const json_value *json)
+int json_integer_value(const _json_value *json)
 {
    json_int_t n;
    if(!json_is_integer(json))
@@ -1002,7 +1002,7 @@ int json_integer_value(const json_value *json)
    return (int) n;
 }
 
-char* json_string_value(const json_value *json)
+char* json_string_value(const _json_value *json)
 {
    if(!json_is_string(json))
       return 0;
@@ -1010,7 +1010,7 @@ char* json_string_value(const json_value *json)
    return json->u.string.ptr;
 }
 
-double json_double_value(const json_value *json)
+double json_double_value(const _json_value *json)
 {
    double r = 0.;
    if(json_is_double(json))
@@ -1021,7 +1021,7 @@ double json_double_value(const json_value *json)
    return r;
 }
 
-json_value* json_get_val(json_value *obj, const char *key)
+_json_value* json_get_val(_json_value *obj, const char *key)
 {
    if (obj->type != json_object)
       return NULL;
@@ -1033,21 +1033,21 @@ json_value* json_get_val(json_value *obj, const char *key)
    return NULL;
 }
 
-json_value* json_new_object() {
-    json_value* obj = new json_value;
+_json_value* json_new_object() {
+    _json_value* obj = new _json_value;
     obj->type = json_object;
     obj->u.object.length = 0;
     obj->u.object.values = nullptr;
     return obj;
 }
 
-void json_add_bool(json_value* obj, const char* name, bool value) {
+void json_add_bool(_json_value* obj, const char* name, bool value) {
     if (!obj || obj->type != json_object) return;
 
     // Add logic to dynamically grow the object values array
     json_object_entry new_entry;
     new_entry.name = strdup(name);
-    new_entry.value = new json_value;
+    new_entry.value = new _json_value;
     new_entry.value->type = json_boolean;
     new_entry.value->u.boolean = value;
 
@@ -1056,12 +1056,12 @@ void json_add_bool(json_value* obj, const char* name, bool value) {
     obj->u.object.values[obj->u.object.length++] = new_entry;
 }
 
-void json_add_string(json_value* obj, const char* name, const char* value) {
+void json_add_string(_json_value* obj, const char* name, const char* value) {
     if (!obj || obj->type != json_object) return;
 
     json_object_entry new_entry;
     new_entry.name = strdup(name);
-    new_entry.value = new json_value;
+    new_entry.value = new _json_value;
     new_entry.value->type = json_string;
     new_entry.value->u.string = strdup(value);
 
@@ -1070,7 +1070,7 @@ void json_add_string(json_value* obj, const char* name, const char* value) {
     obj->u.object.values[obj->u.object.length++] = new_entry;
 }
 
-const char* json_get_string_value(const json_value* obj, const char* name, const char* default_value) {
+const char* json_get_string_value(const _json_value* obj, const char* name, const char* default_value) {
     if (!obj || obj->type != json_object) return default_value;
 
     for (size_t i = 0; i < obj->u.object.length; ++i) {
@@ -1085,12 +1085,12 @@ const char* json_get_string_value(const json_value* obj, const char* name, const
 }
 
 
-void json_add_null(json_value* obj, const char* name) {
+void json_add_null(_json_value* obj, const char* name) {
     if (!obj || obj->type != json_object) return;
 
     json_object_entry new_entry;
     new_entry.name = strdup(name);
-    new_entry.value = new json_value;
+    new_entry.value = new _json_value;
     new_entry.value->type = json_null;
 
     obj->u.object.values = (json_object_entry*)realloc(
@@ -1098,7 +1098,7 @@ void json_add_null(json_value* obj, const char* name) {
     obj->u.object.values[obj->u.object.length++] = new_entry;
 }
 
-void json_add_value(json_value* obj, const char* name, json_value* value) {
+void json_add_value(_json_value* obj, const char* name, _json_value* value) {
     if (!obj || obj->type != json_object || !value) return;
 
     json_object_entry new_entry;
@@ -1110,7 +1110,7 @@ void json_add_value(json_value* obj, const char* name, json_value* value) {
     obj->u.object.values[obj->u.object.length++] = new_entry;
 }
 
-char* json_serialize_to_string(const json_value* value) {
+char* json_serialize_to_string(const _json_value* value) {
     if (!value) return NULL;
 
     // Allocate memory for serialized string
@@ -1136,7 +1136,7 @@ void json_free_serialized_string(char* string) {
     }
 }
 
-void stratum_send_json(YAAMP_CLIENT* client, json_value* response) {
+void stratum_send_json(YAAMP_CLIENT* client, _json_value* response) {
     if (!client || !response) return;
 
     // Serialize JSON response to string

@@ -175,7 +175,7 @@ public:
    }
 #endif
 
-} json_value;
+} _json_value;
 
 #endif // JSON_H
 
@@ -183,30 +183,30 @@ public:
 
 struct YAAMP_CLIENT; // Vorwärtsdeklaration
 
-json_value * json_parse (const json_char * json,
+_json_value * json_parse (const json_char * json,
                          size_t length);
 
 #define json_error_max 128
-json_value * json_parse_ex (json_settings * settings,
+_json_value * json_parse_ex (json_settings * settings,
                             const json_char * json,
                             size_t length,
                             char * error);
 
-void json_value_free (json_value *);
+void json_value_free (_json_value *);
 
 
 /* Not usually necessary, unless you used a custom mem_alloc and now want to
  * use a custom mem_free.
  */
 void json_value_free_ex (json_settings * settings,
-                         json_value *);
+                         _json_value *);
 
-json_value* json_get_val(json_value *obj, const char *key);
+_json_value* json_get_val(_json_value *obj, const char *key);
 
 // todo
-char* json_dumps(json_value * value, int opt);
+char* json_dumps(_json_value * value, int opt);
 
-typedef json_value json_t;
+typedef _json_value json_t;
 #define json_typeof(json)      ((json)->type)
 #define json_is_array(json)    (json && json_typeof(json) == json_array)
 #define json_is_integer(json)  (json && json_typeof(json) == json_integer)
@@ -214,21 +214,21 @@ typedef json_value json_t;
 #define json_is_string(json)   (json && json_typeof(json) == json_string)
 #define json_is_null(json)     (json && json_typeof(json) == json_null)
 
-int json_integer_value(const json_value *json);
-char* json_string_value(const json_value *json);
-double json_double_value(const json_value *json);
+int json_integer_value(const _json_value *json);
+char* json_string_value(const _json_value *json);
+double json_double_value(const _json_value *json);
 
-json_value* json_new_object();
-void json_add_bool(json_value* obj, const char* name, bool value);
-void json_add_string(json_value* obj, const char* name, const char* value);
-void json_add_null(json_value* obj, const char* name);
-void stratum_send_json(YAAMP_CLIENT* client, json_value* response);
+_json_value* json_new_object();
+void json_add_bool(_json_value* obj, const char* name, bool value);
+void json_add_string(_json_value* obj, const char* name, const char* value);
+void json_add_null(_json_value* obj, const char* name);
+void stratum_send_json(YAAMP_CLIENT* client, _json_value* response);
 
-int json_get_int_value(json_value* obj, const char* key, int default_value);
-double json_get_double_value(json_value* obj, const char* key, double default_value);
-void json_add_value(json_value* obj, const char* key, json_value* value);
-const char* json_get_string_value(json_value* obj, const char* key, const char* default_value);
-void json_debug(json_value* obj);
+int json_get_int_value(_json_value* obj, const char* key, int default_value);
+double json_get_double_value(_json_value* obj, const char* key, double default_value);
+void json_add_value(_json_value* obj, const char* key, _json_value* value);
+const char* json_get_string_value(_json_value* obj, const char* key, const char* default_value);
+void json_debug(_json_value* obj);
 
 #ifdef __cplusplus
    } /* extern "C" */
