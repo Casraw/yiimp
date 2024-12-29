@@ -31,8 +31,6 @@
 
 #ifndef JSON_H
 #define JSON_H
-#include <stdbool.h>
-
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,9 +1,4 @@
-#pragma once
 #include "json.h"
-#include "stratum.h"
-#include "client.h"
-#include <stdio.h> // Use this for C instead of <iostream>
-
 
 // Define the constant placeholder for invalid JSON values
 #ifdef __cplusplus
