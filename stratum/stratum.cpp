@@ -1,4 +1,3 @@
-#pragma once
 #include "stratum.h"
 #include <signal.h>
 #include <sys/resource.h>
@@ -526,6 +525,7 @@ void *monitor_thread(void *p)
 				exit(1);
 			}
 		}
+	return NULL;
 	}
 }
 
