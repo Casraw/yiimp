@@ -8,7 +8,7 @@
 //	char ip[64];
 //};
 
-#include "stratum.h"
+typedef void (*YAAMP_HASH_FUNCTION)(const char *, char *, uint32_t);
 
 struct YAAMP_ALGO
 {
