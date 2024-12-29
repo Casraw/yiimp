@@ -17,7 +17,7 @@ void build_submit_values(YAAMP_JOB_VALUES *submitvalues, YAAMP_JOB_TEMPLATE *tem
 	binlify(coinbase_bin, submitvalues->coinbase);
 
 	char doublehash[128];
-	memset(doublehash, 0, 128);	
+	memset(doublehash, 0, 128);
 
 	// some (old) wallet/algos need a simple SHA256 (blakecoin, whirlcoin, groestlcoin...)
 	YAAMP_HASH_FUNCTION merkle_hash = sha256_double_hash_hex;
@@ -26,10 +26,11 @@ void build_submit_values(YAAMP_JOB_VALUES *submitvalues, YAAMP_JOB_TEMPLATE *tem
 	merkle_hash((char *)coinbase_bin, doublehash, coinbase_len/2);
 
 	string merkleroot = merkle_with_first(templ->txsteps, doublehash);
-	
-	bool is_lyra2zz = !strcmp(g_stratum_algo, "lyra2zz"); 
-
 	ser_string_be(merkleroot.c_str(), submitvalues->merkleroot_be, 8);
+
+	if(templ->isbitcash) {
+		sprintf(submitvalues->coinbase, "%s%s%s%s", templ->coinforsubmitb1, nonce1, nonce2, templ->coinforsubmitb2);
+	}
 
 #ifdef MERKLE_DEBUGLOG
 	printf("merkle root %s\n", merkleroot.c_str());
@@ -38,15 +39,18 @@ void build_submit_values(YAAMP_JOB_VALUES *submitvalues, YAAMP_JOB_TEMPLATE *tem
 		sprintf(submitvalues->header, "%s%s%s%s%s%s%s", templ->version, templ->prevhash_be, submitvalues->merkleroot_be,
 			templ->claim_be, ntime, templ->nbits, nonce);
 		ser_string_be(submitvalues->header, submitvalues->header_be, 112/4);
-	} else if (is_lyra2zz) {			
-		sprintf(submitvalues->header, "%s%s%s%s%s%s%s", templ->version, templ->prevhash_be, submitvalues->merkleroot_be,
-			ntime, templ->nbits, nonce, templ->accumulatorcheckpoint_be);	
-		ser_string_be(submitvalues->header, submitvalues->header_be, 112/4);	
 	} else if (strlen(templ->extradata_be) == 128) { // LUX SC
 		sprintf(submitvalues->header, "%s%s%s%s%s%s%s", templ->version, templ->prevhash_be, submitvalues->merkleroot_be,
 			ntime, templ->nbits, nonce, templ->extradata_be);
 		ser_string_be(submitvalues->header, submitvalues->header_be, 36); // 80+64 / sizeof(u32)
-	} else {
+	} else if (templ->needpriceinfo)
+	{
+		sprintf(submitvalues->header, "%s%s%s%s%s%s", templ->version, templ->prevhash_be, submitvalues->merkleroot_be,
+			ntime, templ->nbits, nonce);
+		ser_string_be(submitvalues->header, submitvalues->header_be, 20);
+		sprintf(submitvalues->header_be, "%s%s", submitvalues->header_be, templ->priceinfo);
+	} else
+	{
 		sprintf(submitvalues->header, "%s%s%s%s%s%s", templ->version, templ->prevhash_be, submitvalues->merkleroot_be,
 			ntime, templ->nbits, nonce);
 		ser_string_be(submitvalues->header, submitvalues->header_be, 20);
@@ -232,7 +236,15 @@ static void client_do_submit(YAAMP_CLIENT *client, YAAMP_JOB *job, YAAMP_JOB_VAL
 			sprintf(count_hex, "fd%02x%02x", templ->txcount & 0xFF, templ->txcount >> 8);
 
 		memset(block_hex, 0, block_size);
-		sprintf(block_hex, "%s%s%s", submitvalues->header_be, count_hex, submitvalues->coinbase);
+		
+		if (!strcmp("sha256csm", g_current_algo->name)) 
+		{
+			sprintf(block_hex, "%s%s%s%s", submitvalues->header_be, "0000000000000000000000000000000000000000000000000000000000000000", count_hex, submitvalues->coinbase);
+		} 
+		else 
+		{
+			sprintf(block_hex, "%s%s%s", submitvalues->header_be, count_hex, submitvalues->coinbase);
+		}
 
 		if (g_current_algo->name && !strcmp("jha", g_current_algo->name)) {
 			// block header of 88 bytes
@@ -273,6 +285,10 @@ static void client_do_submit(YAAMP_CLIENT *client, YAAMP_JOB *job, YAAMP_JOB_VAL
 			//	merkle_hash = g_current_algo->merkle_func;
 
 			merkle_hash((char *)submitvalues->header_bin, doublehash2, strlen(submitvalues->header_be)/2);
+
+      // isnt perfect, but it works
+ //     if(strcmp(coind->symbol, "SIN") == 0)
+ //       x22i_hash_hex((char *)submitvalues->header_bin, doublehash2, strlen(submitvalues->header_be)/2);
 
 			char hash1[1024];
 			memset(hash1, 0, 1024);
@@ -342,18 +358,6 @@ void client_submit_error(YAAMP_CLIENT *client, YAAMP_JOB *job, int id, const cha
 	}
 
 	object_unlock(job);
-}
-
-static bool ntime_valid_range(const char ntimehex[])
-{
-	time_t rawtime = 0;
-	uint32_t ntime = 0;
-	if (strlen(ntimehex) != 8) return false;
-	sscanf(ntimehex, "%8x", &ntime);
-	if (ntime < 0x5b000000 || ntime > 0x60000000) // 14 Jan 2021
-		return false;
-	time(&rawtime);
-	return (abs(rawtime - ntime) < (30 * 60));
 }
 
 static bool valid_string_params(json_value *json_params)
@@ -438,8 +442,8 @@ bool client_submit(YAAMP_CLIENT *client, json_value *json_params)
 
 	if(strcmp(ntime, templ->ntime))
 	{
-		if (!ishexa(ntime, 8) || !ntime_valid_range(ntime)) {
-			client_submit_error(client, job, 23, "Invalid time rolling", extranonce2, ntime, nonce);
+		if (!ishexa(ntime, 8)) {
+			client_submit_error(client, job, 23, "Invalid ntime", extranonce2, ntime, nonce);
 			return true;
 		}
 		// dont allow algos permutations change over time (can lead to different speeds)
@@ -500,32 +504,20 @@ bool client_submit(YAAMP_CLIENT *client, json_value *json_params)
 	else
 		build_submit_values(&submitvalues, templ, client->extranonce1, extranonce2, ntime, nonce);
 
-	if (templ->height && (!strcmp(g_current_algo->name,"lyra2z") || !strcmp(g_current_algo->name, "lyra2zz"))) {
+	if (templ->height && !strcmp(g_current_algo->name,"lyra2z")) {
 		lyra2z_height = templ->height;
 	}
 
-	// minimum hash diff begins with 0000, for all...
-	uint8_t pfx = submitvalues.hash_bin[30] | submitvalues.hash_bin[31];
-	if(pfx) {
-		if (g_debuglog_hash) {
-			debuglog("Possible %s error, hash starts with %02x%02x%02x%02x\n", g_current_algo->name,
-				(int) submitvalues.hash_bin[31], (int) submitvalues.hash_bin[30],
-				(int) submitvalues.hash_bin[29], (int) submitvalues.hash_bin[28]);
-		}
-		client_submit_error(client, job, 25, "Invalid share", extranonce2, ntime, nonce);
-		return true;
-	}
+        uint64_t hash_int = * (uint64_t *) &submitvalues.hash_bin[24];
+        uint64_t user_target = share_to_target(client->difficulty_actual) * g_current_algo->diff_multiplier;
+        uint64_t coin_target = decode_compact(templ->nbits) / 0x10000;
 
-	uint64_t hash_int = get_hash_difficulty(submitvalues.hash_bin);
-	uint64_t user_target = diff_to_target(client->difficulty_actual);
-	uint64_t coin_target = decode_compact(templ->nbits);
-	if (templ->nbits && !coin_target) coin_target = 0xFFFF000000000000ULL;
+if (g_debuglog_hash) {
+        debuglog("hash %016lx \n", hash_int);
+        debuglog("shar %016lx \n", user_target);
+        debuglog("coin %016lx \n", coin_target);
+}
 
-	if (g_debuglog_hash) {
-		debuglog("%016llx actual\n", hash_int);
-		debuglog("%016llx target\n", user_target);
-		debuglog("%016llx coin\n", coin_target);
-	}
 	if(hash_int > user_target && hash_int > coin_target)
 	{
 		client_submit_error(client, job, 26, "Low difficulty share", extranonce2, ntime, nonce);

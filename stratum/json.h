@@ -27,87 +27,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-#pragma once
-
-#ifndef JSON_H
-#define JSON_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Define JSON types
-typedef enum {
-    json_null,
-    json_boolean,
-    json_integer,
-    json_double,
-    json_string,
-    json_array,
-    JSON_OBJECT  // Renamed to avoid conflict with other uses of "json_object"
-} json_type;
-
-// Forward declaration of _JsonValue
-struct _JsonValue;
-
-// Define object entry structure
-typedef struct _JsonObjectEntry {
-    char* name;                   // Key name for objects
-    unsigned int name_length;     // Length of the key name
-    struct _JsonValue* value;     // Pointer to the value associated with the key
-} JsonObjectEntry;
-
-// Define JSON value structure and typedef it as 'json_value'
-typedef struct _JsonValue {
-    struct _JsonValue* parent;   // Parent node in the JSON tree
-    json_type type;              // Type of JSON value (e.g., object, array, string)
-
-    union {
-        int boolean;
-        long long integer;
-        double dbl;
-
-        struct {
-            unsigned int length;
-            char* ptr;           // Null-terminated string pointer
-        } string;
-
-        struct {
-            unsigned int length;
-            JsonObjectEntry* values;  // Array of object entries (key-value pairs)
-        } object;
-
-        struct {
-            unsigned int length;
-            struct _JsonValue** values;  // Array of pointers to JSON values
-        } array;
-    } u;
-
-    union {
-        struct _JsonValue* next_alloc;
-        void* object_mem;
-    } _reserved;
-
-} JsonValue;
-
-// Typedef for convenience
-typedef struct _JsonValue json_value;
-
-// Declare a constant placeholder for invalid JSON values
-extern const json_value json_value_none;
-
-// Function declarations using 'json_value'
-json_value* json_get_val(json_value* obj, const char* key);
-void json_add_bool(json_value* obj, const char* name, bool value);
-void json_add_string(json_value* obj, const char* name, const char* value);
-void json_add_null(json_value* obj, const char* name);
-void json_add_value(json_value* obj, const char* name, json_value* value);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // JSON_H
 
 #ifndef _JSON_H
 #define _JSON_H
@@ -151,91 +70,178 @@ typedef struct
 
 } json_settings;
 
-#ifndef JSON_H
-#define JSON_H
-
-typedef struct _json_object_entry {
-    char* name;                   // Key name for objects
-    unsigned int name_length;     // Length of the key name
-    struct _json_value* value;    // Pointer to the value associated with the key
-} json_object_entry;
-
-typedef struct _json_value {
-   struct _json_value* parent;   // Parent node in the JSON tree
-   json_type type;               // JSON type (e.g., object, array, string, etc.)
-
-   union {
-     int boolean;              // Boolean value
-     json_int_t integer;       // Integer value
-     double dbl;               // Double value
-
-     struct {
-       unsigned int length;  // Length of the string
-       char* ptr;            // Null-terminated string pointer
-     } string;
-
-      struct {
-        unsigned int length;  // Number of object entries
-        json_object_entry* values;  // Array of object entries (key-value pairs)
-      } object;
-
-      struct {
-        unsigned int length;  // Number of array elements
-        struct _json_value** values;  // Array of pointers to JSON values
-      } array;
-   } u;
-
-   union {
-     struct _json_value* next_alloc;  // Next allocated node (used internally)
-     void* object_mem;               // Memory reserved for objects (used internally)
-   } _reserved;
-
-#ifdef __cplusplus
-public:
-   inline _json_value() { memset(this, 0, sizeof(_json_value)); }
-
-   inline const struct _json_value& operator[](int index) const {
-      if (type != json_array || index < 0 || (unsigned int)index >= u.array.length) {
-         return json_value_none;
-      }
-      return *u.array.values[index];
-   }
-
-   inline const struct _json_value& operator[](const char* index) const {
-      if (type != json_object) return json_value_none;
-
-      for (unsigned int i = 0; i < u.object.length; ++i) {
-         if (!strcmp(u.object.values[i].name, index)) {
-            return *u.object.values[i].value;
-         }
-      }
-      return json_value_none;
-   }
-
-   inline operator const char*() const {
-      return type == json_string ? u.string.ptr : "";
-   }
-
-   inline operator json_int_t() const {
-      return type == json_integer ? u.integer : (type == json_double ? (json_int_t)u.dbl : 0);
-   }
-
-   inline operator bool() const {
-      return type == json_boolean && u.boolean != 0;
-   }
-
-   inline operator double() const {
-      return type == json_double ? u.dbl : (type == json_integer ? (double)u.integer : 0.0);
-   }
-#endif
-
-} json_value;
-
-#endif // JSON_H
-
 #define json_enable_comments  0x01
 
-struct YAAMP_CLIENT; // Vorwärtsdeklaration
+typedef enum
+{
+   json_none = 0,
+   json_object,
+   json_array,
+   json_integer,
+   json_double,
+   json_string,
+   json_boolean,
+   json_null
+
+} json_type;
+
+extern const struct _json_value json_value_none;
+
+typedef struct _json_value
+{
+   struct _json_value * parent;
+
+   json_type type;
+
+   union
+   {
+      int boolean;
+      json_int_t integer;
+      double dbl;
+
+      struct
+      {
+         unsigned int length;
+         json_char * ptr; /* null terminated */
+
+      } string;
+
+      struct
+      {
+         unsigned int length;
+
+         struct
+         {
+            json_char * name;
+            unsigned int name_length;
+
+            struct _json_value * value;
+
+         } * values;
+
+         #if defined(__cplusplus) && __cplusplus >= 201103L
+         decltype(values) begin () const
+         {  return values;
+         }
+         decltype(values) end () const
+         {  return values + length;
+         }
+         #endif
+
+      } object;
+
+      struct
+      {
+         unsigned int length;
+         struct _json_value ** values;
+
+         #if defined(__cplusplus) && __cplusplus >= 201103L
+         decltype(values) begin () const
+         {  return values;
+         }
+         decltype(values) end () const
+         {  return values + length;
+         }
+         #endif
+
+      } array;
+
+   } u;
+
+   union
+   {
+      struct _json_value * next_alloc;
+      void * object_mem;
+
+   } _reserved;
+
+
+   /* Some C++ operator sugar */
+
+   #ifdef __cplusplus
+
+      public:
+
+         inline _json_value ()
+         {  memset (this, 0, sizeof (_json_value));
+         }
+
+         inline const struct _json_value &operator [] (int index) const
+         {
+            if (type != json_array || index < 0
+                     || ((unsigned int) index) >= u.array.length)
+            {
+               return json_value_none;
+            }
+
+            return *u.array.values [index];
+         }
+
+         inline const struct _json_value &operator [] (const char * index) const
+         {
+            if (type != json_object)
+               return json_value_none;
+
+            for (unsigned int i = 0; i < u.object.length; ++ i)
+               if (!strcmp (u.object.values [i].name, index))
+                  return *u.object.values [i].value;
+
+            return json_value_none;
+         }
+
+         inline operator const char * () const
+         {
+            switch (type)
+            {
+               case json_string:
+                  return u.string.ptr;
+
+               default:
+                  return "";
+            };
+         }
+
+         inline operator json_int_t () const
+         {
+            switch (type)
+            {
+               case json_integer:
+                  return u.integer;
+
+               case json_double:
+                  return (json_int_t) u.dbl;
+
+               default:
+                  return 0;
+            };
+         }
+
+         inline operator bool () const
+         {
+            if (type != json_boolean)
+               return false;
+
+            return u.boolean != 0;
+         }
+
+         inline operator double () const
+         {
+            switch (type)
+            {
+               case json_integer:
+                  return (double) u.integer;
+
+               case json_double:
+                  return u.dbl;
+
+               default:
+                  return 0;
+            };
+         }
+
+   #endif
+
+} json_value;
 
 json_value * json_parse (const json_char * json,
                          size_t length);
@@ -271,26 +277,6 @@ typedef json_value json_t;
 int json_integer_value(const json_value *json);
 char* json_string_value(const json_value *json);
 double json_double_value(const json_value *json);
-
-json_value* json_new_object();
-void json_add_bool(json_value* obj, const char* name, bool value);
-void json_add_string(json_value* obj, const char* name, const char* value);
-void json_add_null(json_value* obj, const char* name);
-void stratum_send_json(YAAMP_CLIENT* client, json_value* response);
-
-int json_get_int_value(json_value* obj, const char* key, int default_value);
-double json_get_double_value(json_value* obj, const char* key, double default_value);
-void json_add_value(json_value* obj, const char* key, json_value* value);
-const char* json_get_string_value(json_value* obj, const char* key, const char* default_value);
-void json_debug(json_value* obj);
-
-// Function declarations using json_value
-json_value* json_get_val(json_value* obj, const char* key);
-void json_add_bool(json_value* obj, const char* name, bool value);
-void json_add_string(json_value* obj, const char* name, const char* value);
-void json_add_null(json_value* obj, const char* name);
-void json_add_value(json_value* obj, const char* name, json_value* value);
-
 
 #ifdef __cplusplus
    } /* extern "C" */

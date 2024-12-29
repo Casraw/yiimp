@@ -1,18 +1,15 @@
-CC = gcc
-CFLAGS = -g -march=native -DNO_EXCHANGE -DHAVE_CURL `mysql_config --cflags`
-LDFLAGS = `mysql_config --libs`
 
-OBJ = stratum.o json.o
+CC= gcc -no-pie
 
-#CFLAGS= -g -march=native
-#SQLFLAGS= `mysql_config --cflags --libs`
+CFLAGS= -g -march=native
+SQLFLAGS= `mysql_config --cflags --libs`
 
 # Comment this line to disable address check on login,
 # if you use the auto exchange feature...
-#CFLAGS += -DNO_EXCHANGE
+CFLAGS += -DNO_EXCHANGE
 
 #CFLAGS=-c -O2 -I /usr/include/mysql
-#LDFLAGS=-O2 `mysql_config --libs`
+LDFLAGS=-O2 `mysql_config --libs`
 
 LDLIBS=iniparser/libiniparser.a algos/libalgos.a sha3/libhash.a -Isecp256k1/include secp256k1/.libs/libsecp256k1.a -lpthread -lgmp -lm -lstdc++ -lssl -lcrypto 
 LDLIBS+=-lmysqlclient
@@ -21,6 +18,7 @@ SOURCES=stratum.cpp db.cpp coind.cpp coind_aux.cpp coind_template.cpp coind_subm
 	rpc.cpp job.cpp job_send.cpp job_core.cpp merkle.cpp share.cpp socket.cpp coinbase.cpp \
 	client.cpp client_submit.cpp client_core.cpp client_difficulty.cpp remote.cpp remote_template.cpp \
 	user.cpp object.cpp json.cpp base58.cpp
+
 CFLAGS += -DHAVE_CURL
 SOURCES += rpc_curl.cpp
 LDCURL = $(shell /usr/bin/pkg-config --static --libs libcurl)

@@ -1,8 +1,7 @@
+
 #include "stratum.h"
 #include <signal.h>
 #include <sys/resource.h>
-#include "json.h"
-#include "client.h"
 
 CommonList g_list_coind;
 CommonList g_list_client;
@@ -74,64 +73,10 @@ struct ifaddrs *g_ifaddr;
 
 volatile bool g_exiting = false;
 
+void *stratum_thread(void *p);
+void *monitor_thread(void *p);
+
 ////////////////////////////////////////////////////////////////////////////////////////
-//mining.configure
-void handle_mining_configure(YAAMP_CLIENT *client, json_value *json) {
-    if (!client || !json) return;
-
-    // Extract parameters from the request
-    json_value *params = json_get_array(json, "params");
-    if (!params || params->u.array.length < 2) return;
-
-    json_value *extensions = params->u.array.values[0];
-    json_value *ext_params = params->u.array.values[1];
-
-    if (extensions->type != json_array || ext_params->type != JSON_OBJECT) return;
-
-    // Prepare response map
-    json_value *result = json_new_object();
-
-    // Process supported extensions
-    for (int i = 0; i < extensions->u.array.length; i++) {
-        json_value *extension = extensions->u.array.values[i];
-        if (extension->type == json_string) { // Check if it's a string
-            const char *ext = extension->u.string.ptr; // Access safely
-
-            if (strcmp(ext, "version-rolling") == 0) {
-                const char *mask = json_get_string_value(ext_params, "version-rolling.mask", "ffffffff");
-                int min_bit_count = json_get_int_value(ext_params, "version-rolling.min-bit-count", 2);
-
-                // Example: Define a server-side mask for version rolling
-                const char *server_mask = "00fff000";
-                if (min_bit_count <= 12) {
-                    json_add_bool(result, "version-rolling", true);
-                    json_add_string(result, "version-rolling.mask", server_mask);
-                } else {
-                    json_add_string(result, "version-rolling", "Requested min-bit-count too high");
-                }
-            } else if (strcmp(ext, "minimum-difficulty") == 0) {
-                double min_diff = json_get_double_value(ext_params, "minimum-difficulty.value", 0.0);
-                if (min_diff >= 0.0) {
-                    json_add_bool(result, "minimum-difficulty", true);
-                } else {
-                    json_add_string(result, "minimum-difficulty", "Invalid difficulty value");
-                }
-            } else {
-                // Unknown extension
-                json_add_bool(result, ext, false);
-            }
-        }
-    }
-
-    // Create and send response
-    json_value *response = json_new_object();
-    json_add_null(response, "error");
-    json_add_value(response, "id", json_get_val(json, "id"));
-    json_add_value(response, "result", result);
-
-    stratum_send_json(client, response);
-    json_value_free(response);
-}
 
 static void scrypt_hash(const char* input, char* output, uint32_t len)
 {
@@ -169,15 +114,15 @@ static void neoscrypt_hash(const char* input, char* output, uint32_t len)
 
 YAAMP_ALGO g_algos[] =
 {
-//	{"0x10", 0x10_hash, 1, 0, 0},
+	{"0x10", hash0x10, 1, 0, 0},
 	{"a5a", a5a_hash, 0x10000, 0, 0},
 	{"aergo", aergo_hash, 1, 0, 0},
 	{"allium", allium_hash, 0x100, 0, 0},
-//	{"anime", anime_hash, 1, 0, 0},
-//	{"argon2d250", argon2d_crds_hash, 0x10000, 0, 0 }, // Credits Argon2d Implementation
-//	{"argon2d500", argon2d_dyn_hash, 0x10000, 0, 0 }, // Dynamic Argon2d Implementation
-//	{"argon2d16000", argon2d_hash, 0x10000, 0, 0 }, // Argon2d16000 Implementation
-//	{"astralhash", astralhash_hash, 0x100, 0, 0},
+	{"anime", anime_hash, 1, 0, 0},
+	{"argon2d250", argon2d_crds_hash, 0x10000, 0, 0 }, // Credits Argon2d Implementation
+	{"argon2d500", argon2d_dyn_hash, 0x10000, 0, 0 }, // Dynamic Argon2d Implementation
+	{"argon2d16000", argon2d16000_hash, 0x10000, 0, 0 }, // Argon2d16000 Implementation
+	{"astralhash", astralhash_hash, 0x100, 0, 0},
 	{"bastion", bastion_hash, 1, 0 },
 	{"bcd", bcd_hash, 1, 0, 0},
 	{"bitcore", timetravel10_hash, 0x100, 0, 0},
@@ -189,7 +134,7 @@ YAAMP_ALGO g_algos[] =
 	{"c11", c11_hash, 1, 0, 0},
 	{"cosa", cosa_hash, 1, 0, 0}, //Cosanta (COSA)
 	{"cpupower", cpupower_hash, 0x10000, 0, 0}, //CPUchain
-//	{"curvehash", curve_hash, 1, 0, 0},
+	{"curvehash", curve_hash, 1, 0, 0},
 	{"decred", decred_hash, 1, 0 },
 	{"dedal", dedal_hash, 0x100, 0, 0},
 	{"deep", deep_hash, 1, 0, 0},
@@ -198,13 +143,13 @@ YAAMP_ALGO g_algos[] =
 	{"geek", geek_hash, 1, 0, 0},
 	{"gr", gr_hash, 0x10000, 0, 0},
 	{"groestl", groestl_hash, 0x100, 0, sha256_hash_hex }, /* groestlcoin */
-//	{"heavyhash", heavyhash_hash, 1, 0, 0}, /* OBTC */
+	{"heavyhash", heavyhash_hash, 1, 0, 0}, /* OBTC */
 	{"hex", hex_hash, 0x100, 0, sha256_hash_hex },
 	{"hive", hive_hash, 0x10000, 0, 0},
 	{"hmq1725", hmq17_hash, 0x10000, 0, 0},
 	{"honeycomb", beenode_hash, 0x10000, 0, 0},
-//	{"hsr", hsr_hash, 1, 0, 0},
-//	{"jeonghash", jeonghash_hash, 0x100, 0, 0},
+	{"hsr", hsr_hash, 1, 0, 0},
+	{"jeonghash", jeonghash_hash, 0x100, 0, 0},
 	{"jha", jha_hash, 0x10000, 0},
 	{"keccak", keccak256_hash, 0x80, 0, sha256_hash_hex },
 	{"keccakc", keccak256_hash, 0x100, 0, 0},
@@ -213,12 +158,12 @@ YAAMP_ALGO g_algos[] =
 	{"luffa", luffa_hash, 1, 0, 0},
 	{"lyra2", lyra2re_hash, 0x80, 0, 0},
 	{"lyra2v2", lyra2v2_hash, 0x100, 0, 0},
-//	{"lyra2v3", lyra2v3_hash, 0x100, 0, 0},
-//	{"lyra2vc0ban", lyra2vc0ban_hash, 0x100, 0, 0},
+	{"lyra2v3", lyra2v3_hash, 0x100, 0, 0},
+	{"lyra2vc0ban", lyra2vc0ban_hash, 0x100, 0, 0},
 	{"lyra2z", lyra2z_hash, 0x100, 0, 0},
-//	{"lyra2z330", lyra2z330_hash, 0x100, 0, 0},
+	{"lyra2z330", lyra2z330_hash, 0x100, 0, 0},
 	{"m7m", m7m_hash, 0x10000, 0, 0},
-//	{"memehash", meme_hash, 1, 0, 0}, /*PepePow Algo*/
+	{"memehash", meme_hash, 1, 0, 0}, /*PepePow Algo*/
 	{"megabtx", megabtx_hash, 0x100, 0, 0}, /* Bitcore New Algo*/
 	{"megamec", megamec_hash, 0x100, 0, 0}, /* Megacoin New Algo*/
 	{"mike", mike_hash, 0x10000, 0, 0},
@@ -227,12 +172,12 @@ YAAMP_ALGO g_algos[] =
 	{"myr-gr", groestlmyriad_hash, 1, 0, 0}, /* groestl + sha 64 */
 	{"neoscrypt", neoscrypt_hash, 0x10000, 0, 0},
 	{"nist5", nist5_hash, 1, 0, 0},
-//	{"pawelhash", pawelhash_hash, 0x100, 0, 0},
+	{"pawelhash", pawelhash_hash, 0x100, 0, 0},
 	{"penta", penta_hash, 1, 0, 0},
 	{"phi", phi_hash, 1, 0, 0},
 	{"phi2", phi2_hash, 0x100, 0, 0},
 	{"phi5", phi5_hash, 1, 0, 0},
-//	{"pipe", pipe_hash, 1,0,0},
+	{"pipe", pipe_hash, 1,0,0},
 	{"polytimos", polytimos_hash, 1, 0, 0},
 	{"power2b", power2b_hash, 0x10000, 0, 0 },
 	{"quark", quark_hash, 1, 0, 0},
@@ -246,7 +191,7 @@ YAAMP_ALGO g_algos[] =
 	{"sha256dt", sha256dt_hash, 1, 0, 0},
 	{"sha256csm", sha256csm_hash, 1, 0, 0},
 	{"sha256t", sha256t_hash, 1, 0, 0}, // sha256 3x
-//	{"sha3d", sha3d_hash, 1, 0, sha3d_hash_hex},
+	{"sha3d", sha3d_hash, 1, 0, sha3d_hash_hex},
 	{"sha512256d", sha512_256_double_hash, 1, 0, 0},
 	{"sib", sib_hash, 1, 0, 0},
 	{"skydoge", skydoge_hash, 1, 0, 0}, /* Skydoge */
@@ -281,22 +226,22 @@ YAAMP_ALGO g_algos[] =
 	{"x22i", x22i_hash, 1, 0, 0},
 	{"x25x", x25x_hash, 1, 0, 0},
 	{"xevan", xevan_hash, 0x100, 0, 0},
-//	{"yescrypt", yescrypt_hash, 0x10000, 0, 0},
-//	{"yescryptR8", yescryptR8_hash, 0x10000, 0, 0 },
-//	{"yescryptR16", yescryptR16_hash, 0x10000, 0, 0 },
-//	{"yescryptR32", yescryptR32_hash, 0x10000, 0, 0 },
+	{"yescrypt", yescrypt_hash, 0x10000, 0, 0},
+	{"yescryptR8", yescryptR8_hash, 0x10000, 0, 0 },
+	{"yescryptR16", yescryptR16_hash, 0x10000, 0, 0 },
+	{"yescryptR32", yescryptR32_hash, 0x10000, 0, 0 },
 	{"yespower", yespower_hash, 0x10000, 0, 0 },
-//	{"yespowerIC", yespowerIC_hash, 0x10000, 0, 0 }, //IsotopeC[IC]
-//	{"yespowerIOTS", yespowerIOTS_hash, 0x10000, 0, 0 }, //Iots [IOTS]
-//	{"yespowerLITB", yespowerLITB_hash, 0x10000, 0, 0 }, //LightBit[LITB]
-//	{"yespowerLTNCG", yespowerLTNCG_hash, 0x10000, 0, 0 }, //LightningCash Gold[LTNCG]
-//	{"yespowerR16", yespowerR16_hash, 0x10000, 0, 0 },
-//	{"yespowerRES", yespowerRES_hash, 0x10000, 0, 0 }, //Resistanse[RES] 
-//	{"yespowerSUGAR", yespowerSUGAR_hash, 0x10000, 0, 0 }, //Sugarchain[SUGAR] 
-//	{"yespowerTIDE", yespowerTIDE_hash, 0x10000, 0, 0 }, //Tidecoin[TDC] 
-//	{"yespowerURX", yespowerURX_hash, 0x10000, 0, 0 }, //UraniumX[URX] 
-//	{"yespowerMGPC", yespowerMGPC_hash, 0x10000, 0, 0 }, //Magpiecoin[MGPC] 
-//	{"yespowerARWN", yespowerARWN_hash, 0x10000, 0, 0 }, //Arowanacoin[ARWN] 
+	{"yespowerIC", yespowerIC_hash, 0x10000, 0, 0 }, //IsotopeC[IC]
+	{"yespowerIOTS", yespowerIOTS_hash, 0x10000, 0, 0 }, //Iots [IOTS]
+	{"yespowerLITB", yespowerLITB_hash, 0x10000, 0, 0 }, //LightBit[LITB]
+	{"yespowerLTNCG", yespowerLTNCG_hash, 0x10000, 0, 0 }, //LightningCash Gold[LTNCG]
+	{"yespowerR16", yespowerR16_hash, 0x10000, 0, 0 },
+	{"yespowerRES", yespowerRES_hash, 0x10000, 0, 0 }, //Resistanse[RES] 
+	{"yespowerSUGAR", yespowerSUGAR_hash, 0x10000, 0, 0 }, //Sugarchain[SUGAR] 
+	{"yespowerTIDE", yespowerTIDE_hash, 0x10000, 0, 0 }, //Tidecoin[TDC] 
+	{"yespowerURX", yespowerURX_hash, 0x10000, 0, 0 }, //UraniumX[URX] 
+	{"yespowerMGPC", yespowerMGPC_hash, 0x10000, 0, 0 }, //Magpiecoin[MGPC] 
+	{"yespowerARWN", yespowerARWN_hash, 0x10000, 0, 0 }, //Arowanacoin[ARWN] 
 	{"whirlcoin", whirlpool_hash, 1, 0, sha256_hash_hex }, /* old sha merkleroot */
 	{"whirlpool", whirlpool_hash, 1, 0 }, /* sha256d merkleroot */
 	{"whirlpoolx", whirlpoolx_hash, 1, 0, 0},
@@ -522,71 +467,62 @@ void *monitor_thread(void *p)
 				exit(1);
 			}
 		}
-	return NULL;
 	}
-	return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 void *stratum_thread(void *p)
 {
-    int listen_sock = socket(AF_INET, SOCK_STREAM, 0);
-    if(listen_sock <= 0) yaamp_error("socket");
+	int listen_sock = socket(AF_INET, SOCK_STREAM, 0);
+	if(listen_sock <= 0) yaamp_error("socket");
 
-    int optval = 1;
-    setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
+	int optval = 1;
+	setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
 
-    struct sockaddr_in serv;
+	struct sockaddr_in serv;
 
-    serv.sin_family = AF_INET;
-    serv.sin_addr.s_addr = htonl(INADDR_ANY);
-    serv.sin_port = htons(g_tcp_port);
+	serv.sin_family = AF_INET;
+	serv.sin_addr.s_addr = htonl(INADDR_ANY);
+	serv.sin_port = htons(g_tcp_port);
 
-    int res = bind(listen_sock, (struct sockaddr*)&serv, sizeof(serv));
-    if(res < 0) yaamp_error("bind");
+	int res = bind(listen_sock, (struct sockaddr*)&serv, sizeof(serv));
+	if(res < 0) yaamp_error("bind");
 
-    res = listen(listen_sock, 4096);
-    if(res < 0) yaamp_error("listen");
+	res = listen(listen_sock, 4096);
+	if(res < 0) yaamp_error("listen");
 
-    //////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////
 
-    int failcount = 0;
-    while(!g_exiting)
-    {
-        int sock = accept(listen_sock, NULL, NULL);
-        if(sock <= 0)
-        {
-            int error = errno;
-            stratumlog("%s socket accept() error %d\n", g_stratum_algo, error);
-            failcount++;
-            usleep(50000);
-            if (error == 24 && failcount > 5) {
-                g_exiting = true; // happen when max open files is reached (see ulimit)
-                stratumlogdate("%s too much socket failure, exiting...\n", g_stratum_algo);
-                exit(error);
-            }
-            continue;
-        }
+	int failcount = 0;
+	while(!g_exiting)
+	{
+		int sock = accept(listen_sock, NULL, NULL);
+		if(sock <= 0)
+		{
+			int error = errno;
+			stratumlog("%s socket accept() error %d\n", g_stratum_algo, error);
+			failcount++;
+			usleep(50000);
+			if (error == 24 && failcount > 5) {
+				g_exiting = true; // happen when max open files is reached (see ulimit)
+				stratumlogdate("%s too much socket failure, exiting...\n", g_stratum_algo);
+				exit(error);
+			}
+			continue;
+		}
 
-        failcount = 0;
-        
-        // Neues Thread für jeden Client starten
-        pthread_t thread;
-        int res = pthread_create(&thread, NULL, client_thread, (void *)(long)sock);
-        if(res != 0)
-        {
-            int error = errno;
-            close(sock);
-            g_exiting = true;
-            stratumlog("%s pthread_create error %d %d\n", g_stratum_algo, res, error);
-        }
+		failcount = 0;
+		pthread_t thread;
+		int res = pthread_create(&thread, NULL, client_thread, (void *)(long)sock);
+		if(res != 0)
+		{
+			int error = errno;
+			close(sock);
+			g_exiting = true;
+			stratumlog("%s pthread_create error %d %d\n", g_stratum_algo, res, error);
+		}
 
-        pthread_detach(thread);
-    }
-
-    // Stratum-Server muss so lange laufen, bis g_exiting auf true gesetzt wird
-    close(listen_sock);
-	return NULL;
+		pthread_detach(thread);
+	}
 }
-

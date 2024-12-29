@@ -1,21 +1,4 @@
 
-#ifdef ENABLE_UASSERT
-#define UASSERT_EXIT_CODE 233
-
-static inline void uassert_impl(bool cond, const char* expr, const char* file, int line) {
-	if (!cond) {
-		fprintf(stderr, "uassert FAILURE: %s [%s:%i]\n", expr, file, line);	
-		exit(UASSERT_EXIT_CODE);
-	}
-}
-
-#define UASSERT(cond) uassert_impl((cond), #cond, __FILE__, __LINE__)
-#else
-#define UASSERT(cond)
-#endif
-
-typedef uint64_t uint256_t[4];
-
 struct YAAMP_CLIENT;
 
 struct COMMONLISTITEM
@@ -97,6 +80,7 @@ void base64_encode(char *base64, const char *normal);
 void base64_decode(char *normal, const char *base64);
 
 void ser_number(int n, char *s);
+void ser_compactsize(uint64_t nSize, char *a);
 
 void ser_string_be(const char *input, char *output, int len);
 void ser_string_be2(const char *input, char *output, int len);
@@ -113,6 +97,7 @@ unsigned int htoi(const char *s);
 uint64_t htoi64(const char *s);
 
 uint64_t decode_compact(const char *input);
+uint64_t sharetotarg(double diff);
 
 uint64_t diff_to_target(double difficulty);
 double target_to_diff(uint64_t target);
@@ -129,10 +114,6 @@ void string_lower(char *s);
 void string_upper(char *s);
 
 int getblocheight(const char *coinb1);
-
-void ip_to_uint_le(uint32_t* uint_out, char* ip_in);
-
-
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -159,4 +140,4 @@ static inline uint32_t bswap32(uint32_t x) {
 	return x;
 }
 
-
+uint64_t share_to_target(double diff);

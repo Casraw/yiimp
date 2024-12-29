@@ -8,37 +8,27 @@ CXXFLAGS = -O2 -I.. -march=native
 CFLAGS= $(CXXFLAGS) -std=gnu99
 LDFLAGS=-O2 -lgmp
 
-SOURCES=x17.c heavyhash/keccak_tiny.c heavyhash/heavyhash.c curvehash.c bastion.c skein2.c \
-cryptonote/cryptonight_lite.c cryptonote/cryptonight_dark.c cryptonote/crypto/c_skein.c cryptonote/crypto/c_jh.c cryptonote/crypto/c_blake256.c cryptonote/crypto/hash.c \
-cryptonote/crypto/c_groestl.c cryptonote/crypto/c_keccak.c cryptonote/crypto/oaes_lib.c cryptonote/crypto/aesb.c cryptonote/cryptonight_soft_shell.c cryptonote/cryptonight_dark_lite.c \
-cryptonote/cryptonight_turtle.c cryptonote/cryptonight_turtle_lite.c cryptonote/cryptonight_fast.c cryptonote/cryptonight.c sha256csm.c Lyra2-z.c \
-x22.c scrypt.c skydoge.c gltalgos.c sha256.c lbk3.c \
-0x10.c Lyra2.c allium.c velvet.c rainforest.c anime.c \
-a5amath.c x11kvs.c KeccakP-800-reference.c x16rv2.c mike.c lyra2zz.c \
-vitalium.c Sponge.c pentablake.c blake.c x21s.c \
-sib.c x14.c aergo.c argon2a.c quark.c dedal.c \
-yescrypt.c x16s.c x17r.c minotaur.c x11.c luffa.c \
-scryptn.c renesis.c xevan.c qubit.c tribus.c a5a.c \
-hmq17.c c11.c lane.c SWIFFTX/SWIFFTX.c blake2s.c veltor.c \
-lyra2v2.c geek.c phi1612.c sha256_Y.c sha256t.c lyra2v3.c \
-lbry.c jha.c megabtx.c Lyra2-zz.c keccak.c sha256dt.c \
-whirlpool.c blake2b.c skein.c lyra2re.c honeycomb/facet_one.c \
-honeycomb/facet_six.c honeycomb/facet_four.c honeycomb/facet_five.c honeycomb/facets_helper.c honeycomb/facet_three.c honeycomb/facet_two.c \
-beenode.c blake2-ref/blake2s.c blake2-ref/blake2b.c sha256q.c phi.c \
-x20r.c balloon.c sha3d.c x11k.c lyra2z.c x15.c \
-x11evo.c drop.c argon2d/argon2.c argon2d/opt.c argon2d/thread.c \
-argon2d/encoding.c argon2d/core.c lyra2z330.c deep.c hive.c \
-blake2/blake2b.c groestl.c yescrypt-platform.c memehash.c megamec.c blakecoin.c \
-yespower/yespower-combined.c yespower/crypto/blake2b-yp.c yespower/yespower-platform.c yespower/yespower-blake2b.c bmw.c x18.c \
-sha256-d.c fresh.c x16rt.c qureno.c neoscrypt.c x25x.c \
-sonoa.c bitcore.c bmw512.c polytimos.c argon2m.c hex.c \
-ar2/argon2.c ar2/cores.c ar2/ar2-scrypt-jane.c ar2/blake2b.c ar2/opt.c \
-ar2/thread.c ar2/ref.c \
-nist5.c cosa.c x13.c timetravel.c bcd.c pipehash.c \
-minotaurx.c m7m.c yescrypt-opt.c sha256-P.c gost.c zr5.c \
-x12.c exosis.c lyra2re3.c phi2.c gr.c pomelo.c \
-x16r.c sha512_256.c phi5.c skunk.c lyra2vc0ban.c whirlpoolx.c \
-x22i.c
+SOURCES=lyra2re.c lyra2v2.c Lyra2.c lyra2z.c lyra2z330.c Lyra2-z.c Sponge.c allium.c SWIFFTX/SWIFFTX.c lyra2vc0ban.c lyra2v3.c \
+	c11.c x11.c x12.c x13.c hsr14.c x14.c x15.c x17.c x17r.c x18.c x11k.c x11kvs.c x22.c \
+	blake.c blakecoin.c blake2s.c jha.c keccak.c lbry.c tribus.c \
+	deep.c fresh.c groestl.c neoscrypt.c nist5.c quark.c qubit.c skein.c skein2.c bmw512.c \
+	bitcore.c timetravel.c x11evo.c x16r.c x16rv2.c x16s.c xevan.c bastion.c hmq17.c sonoa.c \
+	bmw.c luffa.c pentablake.c vitalium.c whirlpool.c whirlpoolx.c zr5.c \
+	scrypt.c scryptn.c sha256.c sha256t.c sha256csm.c \
+	x16rt.c sha256-d.c minotaur.c minotaurx.c curvehash.c megabtx.c megamec.c memehash.c \
+	yescrypt.c yescrypt-opt.c sha256_Y.c \
+	yespower/yespower-platform.c yespower/yespower-combined.c sha256-P.c yespower/yespower-blake2b.c yespower/crypto/blake2b-yp.c \
+	a5a.c a5amath.c m7m.c magimath.cpp velvet.c \
+	blake2/blake2b.c blake2-ref/blake2b.c blake2-ref/blake2s.c ar2/argon2.c ar2/core.c ar2/encoding.c ar2/opt.c ar2/thread.c \
+	hive.c pomelo.c hex.c argon2d.c geek.c bcd.c \
+	phi.c phi2.c phi5.c polytimos.c rainforest.c renesis.c skunk.c sib.c veltor.c gost.c aergo.c x22i.c x21s.c lbk3.c pipehash.c dedal.c x20r.c gltalgos.c lane.c x25x.c \
+	beenode.c honeycomb/facet_one.c honeycomb/facet_two.c honeycomb/facet_three.c honeycomb/facet_four.c honeycomb/facet_five.c honeycomb/facet_six.c honeycomb/facets_helper.c \
+	gr.c cryptonote/crypto/aesb.c  cryptonote/crypto/c_blake256.c  cryptonote/crypto/c_groestl.c  cryptonote/crypto/c_jh.c  cryptonote/crypto/c_keccak.c  cryptonote/crypto/c_skein.c  cryptonote/crypto/hash.c  cryptonote/crypto/oaes_lib.c \
+	cryptonote/cryptonight.c \
+	cryptonote/cryptonight_dark.c cryptonote/cryptonight_dark_lite.c cryptonote/cryptonight_fast.c \
+	cryptonote/cryptonight_lite.c cryptonote/cryptonight_soft_shell.c cryptonote/cryptonight_turtle.c \
+	cryptonote/cryptonight_turtle_lite.c anime.c \
+	heavyhash/heavyhash.c heavyhash/keccak_tiny.c cosa.c 0x10.c mike.c sha512_256.c sha3d.c sha256dt.c skydoge.c
 	
 OBJECTS=$(SOURCES:%.c=%.o) $(SOURCES:%.cpp=%.o) $(SOURCES:%.cc=%.o)
 OUTPUT=libalgos.a
