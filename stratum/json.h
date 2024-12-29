@@ -28,6 +28,8 @@
  * SUCH DAMAGE.
  */
 
+#include client.h
+
 #ifndef _JSON_H
 #define _JSON_H
 
