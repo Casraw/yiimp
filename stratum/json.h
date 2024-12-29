@@ -73,12 +73,6 @@ typedef struct
 #ifndef JSON_H
 #define JSON_H
 
-#ifdef __cplusplus
-extern const struct _json_value json_value_none; // Declared for C++
-#else
-extern const struct _json_value json_value_none; // Declared for C
-#endif
-
 typedef struct _json_object_entry {
     char* name;                   // Key name for objects
     unsigned int name_length;     // Length of the key name
@@ -87,8 +81,6 @@ typedef struct _json_object_entry {
 
 typedef struct _json_value {
    struct _json_value* parent;   // Parent node in the JSON tree
-   json_type type;  // Add this field to store the JSON value type
-
    json_type type;               // JSON type (e.g., object, array, string, etc.)
 
    union {
@@ -157,6 +149,8 @@ public:
 #endif
 
 } json_value;
+
+extern const struct _json_value json_value_none;
 
 #ifdef __cplusplus
 const struct _json_value json_value_none;
