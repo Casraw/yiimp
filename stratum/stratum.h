@@ -134,6 +134,20 @@ extern bool g_autoexchange;
 
 YAAMP_ALGO *stratum_find_algo(const char *name);
 
+#ifndef STRATUM_H
+#define STRATUM_H
+
+#include <pthread.h>
+
+// Declare monitor_thread
+void* monitor_thread(void* arg);
+
+// Declare stratum_thread
+void* stratum_thread(void* arg);
+
+#endif // STRATUM_H
+
+
 extern "C"
 {
 void sha256_hash(const char *input, char *output, unsigned int len);
