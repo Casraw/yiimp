@@ -55,17 +55,6 @@
 
 #endif
 
-typedef enum {
-    json_null,
-    json_boolean,
-    json_integer,
-    json_double,
-    json_string,
-    json_array,
-    json_object
-} json_type;
-
-
 typedef struct
 {
    unsigned long max_memory;
@@ -189,7 +178,6 @@ typedef enum
    json_string,
    json_boolean,
    json_null
-
 } json_type;
 
 struct YAAMP_CLIENT; // Vorwärtsdeklaration
