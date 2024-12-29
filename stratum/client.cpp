@@ -621,11 +621,12 @@ void *client_thread(void *p)
 		}
 		else if (!strcmp(method, "mining.configure")) {
     		// Beispiel: Einfacher Erfolg ohne zusätzliche Verarbeitung
-    		json_t *response = json_object();
-    		json_object_set_new(response, "id", json_integer(id));
+    		json_t *response = json_object(); // Korrekt mit Jansson
+    		json_object_set_new(response, "id", json_integer(client->id_int)); // Korrigiere 'id' zu client->id_int
     		json_object_set_new(response, "result", json_object());
     		json_object_set_new(response, "error", json_null());
-    		client_send_result(client, response);
+    		client_send_result(client, response); // Vermutlich client_send_result angepasst
+    		json_decref(response); // Speicher freigeben, um Speicherlecks zu vermeiden
 		}
 
 		else if(!strcmp(method, "mining.update_block"))
