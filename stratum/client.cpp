@@ -620,13 +620,14 @@ void *client_thread(void *p)
 			b = client_send_result(client, "true");
 		}
 		else if (!strcmp(method, "mining.configure")) {
-    		// Beispiel: Einfacher Erfolg ohne zusätzliche Verarbeitung
-    		json_t *response = json_object(); // Korrekt mit Jansson
-    		json_object_set_new(response, "id", json_integer(client->id_int)); // Korrigiere 'id' zu client->id_int
-    		json_object_set_new(response, "result", json_object());
-    		json_object_set_new(response, "error", json_null());
-    		client_send_result(client, response); // Vermutlich client_send_result angepasst
-    		json_decref(response); // Speicher freigeben, um Speicherlecks zu vermeiden
+    		// Hardcodierte JSON-Antwort für Litecoin Cash
+    		const char *response = 
+        	"{\"id\":1,"
+        	"\"result\":{\"version-rolling\":true,\"version-rolling.mask\":\"1fffe000\",\"minimum-difficulty\":true},"
+        	"\"error\":null}";
+    
+    		// Sende die Antwort direkt über den Client-Socket
+    		socket_send_raw(client->sock, response, strlen(response));
 		}
 
 		else if(!strcmp(method, "mining.update_block"))
