@@ -28,6 +28,33 @@
  * SUCH DAMAGE.
  */
 #pragma once
+
+typedef enum
+{
+   json_none = 0,
+   json_object,
+   json_array,
+   json_integer,
+   json_double,
+   json_string,
+   json_boolean,
+   json_null
+} json_type;
+
+#ifndef JSON_H
+#define JSON_H
+
+// Declare the constant placeholder for invalid JSON values
+#ifdef __cplusplus
+extern const struct _json_value json_value_none; /* Zero-initialized by constructor */
+#else
+extern const struct _json_value json_value_none; /* Explicitly zero-initialized */
+#endif
+
+// Other declarations...
+
+#endif // JSON_H
+
 #ifndef _JSON_H
 #define _JSON_H
 
@@ -150,29 +177,9 @@ public:
 
 } json_value;
 
-extern const struct _json_value json_value_none;
-
-#ifdef __cplusplus
-const struct _json_value json_value_none;
-#else
-const struct _json_value json_value_none = {0};
-#endif
-
 #endif // JSON_H
 
 #define json_enable_comments  0x01
-
-typedef enum
-{
-   json_none = 0,
-   json_object,
-   json_array,
-   json_integer,
-   json_double,
-   json_string,
-   json_boolean,
-   json_null
-} json_type;
 
 struct YAAMP_CLIENT; // Vorwärtsdeklaration
 
