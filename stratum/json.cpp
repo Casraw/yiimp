@@ -26,7 +26,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-#pragma once
 #include "json.h"
 #include <sys/socket.h> // Required for send()
 #include <sys/types.h> // Required for send()
