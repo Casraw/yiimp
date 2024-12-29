@@ -1,6 +1,3 @@
 {
-    "C_Cpp.errorSquiggles": "disabled",
-    "files.associations": {
-        "system_error": "cpp"
-    }
+    "C_Cpp.errorSquiggles": "disabled"
 }
