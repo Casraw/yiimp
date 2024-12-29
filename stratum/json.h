@@ -28,7 +28,7 @@
  * SUCH DAMAGE.
  */
 
-#include client.h
+#include "client.h" // Falls die Datei lokal ist
 
 #ifndef _JSON_H
 #define _JSON_H
@@ -283,7 +283,6 @@ char* json_string_value(const json_value *json);
 double json_double_value(const json_value *json);
 
 json_value* json_new_object();
-json_value* json_get_val(json_value* obj, const char* key);
 void json_add_bool(json_value* obj, const char* name, bool value);
 void json_add_string(json_value* obj, const char* name, const char* value);
 void json_add_null(json_value* obj, const char* name);

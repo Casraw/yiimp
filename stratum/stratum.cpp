@@ -127,7 +127,7 @@ void handle_mining_configure(YAAMP_CLIENT *client, json_value *json)
     // Antwort erstellen und zurücksenden
     json_value *response = json_new_object();
     json_add_null(response, "error");
-    json_add_value(response, "id", json_get_value(json, "id"));
+    json_add_value(response, "id", json_get_val(json, "id"));
     json_add_value(response, "result", result);
 
     stratum_send_json(client, response);
