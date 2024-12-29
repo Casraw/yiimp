@@ -11,7 +11,7 @@ CFLAGS += -DNO_EXCHANGE
 #CFLAGS=-c -O2 -I /usr/include/mysql
 LDFLAGS=-O2 `mysql_config --libs`
 
-LDLIBS=iniparser/libiniparser.a algos/libalgos.a sha3/libhash.a -Isecp256k1/include secp256k1/.libs/libsecp256k1.a -lpthread -lgmp -lm -lstdc++ -lssl -lcrypto 
+LDLIBS=iniparser/libiniparser.a algos/libalgos.a sha3/libhash.a -Isecp256k1/include secp256k1/.libs/libsecp256k1.a -lpthread -lgmp -lm -lstdc++ -lssl -lcrypto -ljansson
 LDLIBS+=-lmysqlclient
 
 SOURCES=stratum.cpp db.cpp coind.cpp coind_aux.cpp coind_template.cpp coind_submit.cpp util.cpp list.cpp \
