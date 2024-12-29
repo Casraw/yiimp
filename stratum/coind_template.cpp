@@ -321,7 +321,7 @@ YAAMP_JOB_TEMPLATE *coind_create_template(YAAMP_COIND *coind)
 	}
 	else if (strcmp(coind->symbol, "LBC") == 0) {
 		json_value *json_claim = rpc_call(&coind->rpc, "getclaimtrie");
-		if (!json_claim || json_claim->type != json_object)
+		if (!json_claim || json_claim->type != JSON_OBJECT)
 			return NULL;
 		json_value *json_cls = json_get_array(json_claim, "result");
 		if (!json_cls || !json_is_array(json_cls))
@@ -329,7 +329,7 @@ YAAMP_JOB_TEMPLATE *coind_create_template(YAAMP_COIND *coind)
 		// get first claim "", seems the root
 		// if empty need 0000000000000000000000000000000000000000000000000000000000000001
 		json_value *json_obj = json_cls->u.array.values[0];
-		if (!json_obj || json_claim->type != json_object)
+		if (!json_obj || json_claim->type != JSON_OBJECT)
 			return NULL;
 		claim = json_get_string(json_obj, "hash");
 		if (claim) {
