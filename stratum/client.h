@@ -8,6 +8,8 @@
 //	char ip[64];
 //};
 
+#include "stratum.h"
+
 struct YAAMP_ALGO
 {
 	char name[64];
