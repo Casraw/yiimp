@@ -120,7 +120,7 @@ YAAMP_ALGO g_algos[] =
 	{"allium", allium_hash, 0x100, 0, 0},
 //	{"anime", anime_hash, 1, 0, 0},
 //	{"argon2d250", argon2d_crds_hash, 0x10000, 0, 0 }, // Credits Argon2d Implementation
-	{"argon2d500", argon2d_dyn_hash, 0x10000, 0, 0 }, // Dynamic Argon2d Implementation
+//	{"argon2d500", argon2d_dyn_hash, 0x10000, 0, 0 }, // Dynamic Argon2d Implementation
 //	{"argon2d16000", argon2d_hash, 0x10000, 0, 0 }, // Argon2d16000 Implementation
 //	{"astralhash", astralhash_hash, 0x100, 0, 0},
 	{"bastion", bastion_hash, 1, 0 },
@@ -148,7 +148,7 @@ YAAMP_ALGO g_algos[] =
 	{"hive", hive_hash, 0x10000, 0, 0},
 	{"hmq1725", hmq17_hash, 0x10000, 0, 0},
 	{"honeycomb", beenode_hash, 0x10000, 0, 0},
-	{"hsr", hsr_hash, 1, 0, 0},
+//	{"hsr", hsr_hash, 1, 0, 0},
 //	{"jeonghash", jeonghash_hash, 0x100, 0, 0},
 	{"jha", jha_hash, 0x10000, 0},
 	{"keccak", keccak256_hash, 0x80, 0, sha256_hash_hex },
@@ -158,10 +158,10 @@ YAAMP_ALGO g_algos[] =
 	{"luffa", luffa_hash, 1, 0, 0},
 	{"lyra2", lyra2re_hash, 0x80, 0, 0},
 	{"lyra2v2", lyra2v2_hash, 0x100, 0, 0},
-	{"lyra2v3", lyra2v3_hash, 0x100, 0, 0},
-	{"lyra2vc0ban", lyra2vc0ban_hash, 0x100, 0, 0},
+//	{"lyra2v3", lyra2v3_hash, 0x100, 0, 0},
+//	{"lyra2vc0ban", lyra2vc0ban_hash, 0x100, 0, 0},
 	{"lyra2z", lyra2z_hash, 0x100, 0, 0},
-	{"lyra2z330", lyra2z330_hash, 0x100, 0, 0},
+//	{"lyra2z330", lyra2z330_hash, 0x100, 0, 0},
 	{"m7m", m7m_hash, 0x10000, 0, 0},
 //	{"memehash", meme_hash, 1, 0, 0}, /*PepePow Algo*/
 	{"megabtx", megabtx_hash, 0x100, 0, 0}, /* Bitcore New Algo*/
@@ -226,22 +226,22 @@ YAAMP_ALGO g_algos[] =
 	{"x22i", x22i_hash, 1, 0, 0},
 	{"x25x", x25x_hash, 1, 0, 0},
 	{"xevan", xevan_hash, 0x100, 0, 0},
-	{"yescrypt", yescrypt_hash, 0x10000, 0, 0},
+//	{"yescrypt", yescrypt_hash, 0x10000, 0, 0},
 //	{"yescryptR8", yescryptR8_hash, 0x10000, 0, 0 },
-	{"yescryptR16", yescryptR16_hash, 0x10000, 0, 0 },
-	{"yescryptR32", yescryptR32_hash, 0x10000, 0, 0 },
+//	{"yescryptR16", yescryptR16_hash, 0x10000, 0, 0 },
+//	{"yescryptR32", yescryptR32_hash, 0x10000, 0, 0 },
 	{"yespower", yespower_hash, 0x10000, 0, 0 },
-	{"yespowerIC", yespowerIC_hash, 0x10000, 0, 0 }, //IsotopeC[IC]
-	{"yespowerIOTS", yespowerIOTS_hash, 0x10000, 0, 0 }, //Iots [IOTS]
-	{"yespowerLITB", yespowerLITB_hash, 0x10000, 0, 0 }, //LightBit[LITB]
-	{"yespowerLTNCG", yespowerLTNCG_hash, 0x10000, 0, 0 }, //LightningCash Gold[LTNCG]
-	{"yespowerR16", yespowerR16_hash, 0x10000, 0, 0 },
-	{"yespowerRES", yespowerRES_hash, 0x10000, 0, 0 }, //Resistanse[RES] 
-	{"yespowerSUGAR", yespowerSUGAR_hash, 0x10000, 0, 0 }, //Sugarchain[SUGAR] 
-	{"yespowerTIDE", yespowerTIDE_hash, 0x10000, 0, 0 }, //Tidecoin[TDC] 
-	{"yespowerURX", yespowerURX_hash, 0x10000, 0, 0 }, //UraniumX[URX] 
-	{"yespowerMGPC", yespowerMGPC_hash, 0x10000, 0, 0 }, //Magpiecoin[MGPC] 
-	{"yespowerARWN", yespowerARWN_hash, 0x10000, 0, 0 }, //Arowanacoin[ARWN] 
+//	{"yespowerIC", yespowerIC_hash, 0x10000, 0, 0 }, //IsotopeC[IC]
+//	{"yespowerIOTS", yespowerIOTS_hash, 0x10000, 0, 0 }, //Iots [IOTS]
+//	{"yespowerLITB", yespowerLITB_hash, 0x10000, 0, 0 }, //LightBit[LITB]
+//	{"yespowerLTNCG", yespowerLTNCG_hash, 0x10000, 0, 0 }, //LightningCash Gold[LTNCG]
+//	{"yespowerR16", yespowerR16_hash, 0x10000, 0, 0 },
+//	{"yespowerRES", yespowerRES_hash, 0x10000, 0, 0 }, //Resistanse[RES] 
+//	{"yespowerSUGAR", yespowerSUGAR_hash, 0x10000, 0, 0 }, //Sugarchain[SUGAR] 
+//	{"yespowerTIDE", yespowerTIDE_hash, 0x10000, 0, 0 }, //Tidecoin[TDC] 
+//	{"yespowerURX", yespowerURX_hash, 0x10000, 0, 0 }, //UraniumX[URX] 
+//	{"yespowerMGPC", yespowerMGPC_hash, 0x10000, 0, 0 }, //Magpiecoin[MGPC] 
+//	{"yespowerARWN", yespowerARWN_hash, 0x10000, 0, 0 }, //Arowanacoin[ARWN] 
 	{"whirlcoin", whirlpool_hash, 1, 0, sha256_hash_hex }, /* old sha merkleroot */
 	{"whirlpool", whirlpool_hash, 1, 0 }, /* sha256d merkleroot */
 	{"whirlpoolx", whirlpoolx_hash, 1, 0, 0},

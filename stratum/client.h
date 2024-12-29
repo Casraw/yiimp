@@ -41,6 +41,7 @@ public:
 //	YAAMP_SOURCE *source;
 
 	char notify_id[1024];
+	int64_t reqid; // ask request id
 	int created;
 	int last_best;
 

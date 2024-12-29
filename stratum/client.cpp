@@ -614,19 +614,18 @@ void *client_thread(void *p)
 		else if(!strcmp(method, "mining.multi_version"))
 			b = client_send_result(client, "false"); // ASICBOOST
 
+		else if(!strcmp(method, "mining.extranonce.subscribe"))
+		{
+			client->extranonce_subscribe = true;
+			b = client_send_result(client, "true");
+		}
 		else if (!strcmp(method, "mining.configure")) {
-			// Beispiel: Einfacher Erfolg ohne zusätzliche Verarbeitung
+    		// Beispiel: Einfacher Erfolg ohne zusätzliche Verarbeitung
     		json_t *response = json_object();
     		json_object_set_new(response, "id", json_integer(id));
     		json_object_set_new(response, "result", json_object());
     		json_object_set_new(response, "error", json_null());
     		client_send_result(client, response);
-			}
-
-		else if(!strcmp(method, "mining.extranonce.subscribe"))
-		{
-			client->extranonce_subscribe = true;
-			b = client_send_result(client, "true");
 		}
 
 		else if(!strcmp(method, "mining.update_block"))
