@@ -74,9 +74,6 @@ struct ifaddrs *g_ifaddr;
 
 volatile bool g_exiting = false;
 
-void *stratum_thread(void *p);
-void *monitor_thread(void *p);
-
 ////////////////////////////////////////////////////////////////////////////////////////
 //mining.configure
 void handle_mining_configure(YAAMP_CLIENT *client, json_value *json) {
@@ -527,6 +524,7 @@ void *monitor_thread(void *p)
 		}
 	return NULL;
 	}
+	return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -589,5 +587,6 @@ void *stratum_thread(void *p)
 
     // Stratum-Server muss so lange laufen, bis g_exiting auf true gesetzt wird
     close(listen_sock);
+	return NULL;
 }
 

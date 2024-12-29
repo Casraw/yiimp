@@ -55,6 +55,17 @@
 
 #endif
 
+typedef enum {
+    json_null,
+    json_boolean,
+    json_integer,
+    json_double,
+    json_string,
+    json_array,
+    json_object
+} json_type;
+
+
 typedef struct
 {
    unsigned long max_memory;
@@ -86,73 +97,74 @@ typedef struct _json_object_entry {
 } json_object_entry;
 
 typedef struct _json_value {
-    struct _json_value* parent;   // Parent node in the JSON tree
+   struct _json_value* parent;   // Parent node in the JSON tree
+   json_type type;  // Add this field to store the JSON value type
 
-    json_type type;               // JSON type (e.g., object, array, string, etc.)
+   json_type type;               // JSON type (e.g., object, array, string, etc.)
 
-    union {
-        int boolean;              // Boolean value
-        json_int_t integer;       // Integer value
-        double dbl;               // Double value
+   union {
+     int boolean;              // Boolean value
+     json_int_t integer;       // Integer value
+     double dbl;               // Double value
 
-        struct {
-            unsigned int length;  // Length of the string
-            char* ptr;            // Null-terminated string pointer
-        } string;
+     struct {
+       unsigned int length;  // Length of the string
+       char* ptr;            // Null-terminated string pointer
+     } string;
 
-        struct {
-            unsigned int length;  // Number of object entries
-            json_object_entry* values;  // Array of object entries (key-value pairs)
-        } object;
+      struct {
+        unsigned int length;  // Number of object entries
+        json_object_entry* values;  // Array of object entries (key-value pairs)
+      } object;
 
-        struct {
-            unsigned int length;  // Number of array elements
-            struct _json_value** values;  // Array of pointers to JSON values
-        } array;
-    } u;
+      struct {
+        unsigned int length;  // Number of array elements
+        struct _json_value** values;  // Array of pointers to JSON values
+      } array;
+   } u;
 
-    union {
-        struct _json_value* next_alloc;  // Next allocated node (used internally)
-        void* object_mem;               // Memory reserved for objects (used internally)
-    } _reserved;
+   union {
+     struct _json_value* next_alloc;  // Next allocated node (used internally)
+     void* object_mem;               // Memory reserved for objects (used internally)
+   } _reserved;
 
 #ifdef __cplusplus
 public:
-    inline _json_value() { memset(this, 0, sizeof(_json_value)); }
+   inline _json_value() { memset(this, 0, sizeof(_json_value)); }
 
-    inline const struct _json_value& operator[](int index) const {
-        if (type != json_array || index < 0 || (unsigned int)index >= u.array.length) {
-            return json_value_none;
-        }
-        return *u.array.values[index];
-    }
+   inline const struct _json_value& operator[](int index) const {
+      if (type != json_array || index < 0 || (unsigned int)index >= u.array.length) {
+         return json_value_none;
+      }
+      return *u.array.values[index];
+   }
 
-    inline const struct _json_value& operator[](const char* index) const {
-        if (type != json_object) return json_value_none;
+   inline const struct _json_value& operator[](const char* index) const {
+      if (type != json_object) return json_value_none;
 
-        for (unsigned int i = 0; i < u.object.length; ++i) {
-            if (!strcmp(u.object.values[i].name, index)) {
-                return *u.object.values[i].value;
-            }
-        }
-        return json_value_none;
-    }
+      for (unsigned int i = 0; i < u.object.length; ++i) {
+         if (!strcmp(u.object.values[i].name, index)) {
+            return *u.object.values[i].value;
+         }
+      }
+      return json_value_none;
+   }
 
-    inline operator const char*() const {
-        return type == json_string ? u.string.ptr : "";
-    }
+   inline operator const char*() const {
+      return type == json_string ? u.string.ptr : "";
+   }
 
-    inline operator json_int_t() const {
-        return type == json_integer ? u.integer : (type == json_double ? (json_int_t)u.dbl : 0);
-    }
+   inline operator json_int_t() const {
+      return type == json_integer ? u.integer : (type == json_double ? (json_int_t)u.dbl : 0);
+   }
 
-    inline operator bool() const {
-        return type == json_boolean && u.boolean != 0;
-    }
+   inline operator bool() const {
+      return type == json_boolean && u.boolean != 0;
+   }
 
-    inline operator double() const {
-        return type == json_double ? u.dbl : (type == json_integer ? (double)u.integer : 0.0);
-    }
+   inline operator double() const {
+      return type == json_double ? u.dbl : (type == json_integer ? (double)u.integer : 0.0);
+   }
 #endif
 
 } json_value;
