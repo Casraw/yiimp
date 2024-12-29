@@ -1,7 +1,5 @@
 
 #include "stratum.h"
-#include <json-c/json.h>
-
 
 bool client_suggest_difficulty(YAAMP_CLIENT *client, json_value *json_params)
 {
@@ -355,7 +353,7 @@ bool client_ask_stats(YAAMP_CLIENT *client)
 
 static bool client_store_stats(YAAMP_CLIENT *client, json_value *result)
 {
-	if (json_typeof(result) != JSON_OBJECT)
+	if (json_typeof(result) != json_object)
 		return false;
 
 	json_value *val = json_get_val(result, "type");
