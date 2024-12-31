@@ -619,16 +619,13 @@ void *client_thread(void *p)
 			client->extranonce_subscribe = true;
 			b = client_send_result(client, "true");
 		}
+
 		else if (!strcmp(method, "mining.configure")) {
-    		// Hardcodierte JSON-Antwort für Litecoin Cash
-    		const char *response = 
-        	"{\"id\":1,"
-        	"\"result\":{\"version-rolling\":true,\"version-rolling.mask\":\"1fffe000\",\"minimum-difficulty\":true},"
-        	"\"error\":null}";
-    
-    		// Sende die Antwort direkt über den Client-Socket
-    		socket_send_raw(client->sock, response, strlen(response));
+    	// Hardcodierte JSON-Antwort als String
+    	const char *response = "{\"id\":1,\"result\":{\"version-rolling\":true,\"version-rolling.mask\":\"1fffe000\"},\"error\":null}";
+    	socket_send_raw(client->sock, response, strlen(response)); // Sende die Antwort direkt
 		}
+
 
 		else if(!strcmp(method, "mining.update_block"))
 			client_update_block(client, json_params);
