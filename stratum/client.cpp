@@ -626,7 +626,6 @@ void *client_thread(void *p)
     	socket_send_raw(client->sock, response, strlen(response)); // Sende die Antwort direkt
 		}
 
-
 		else if(!strcmp(method, "mining.update_block"))
 			client_update_block(client, json_params);
 
