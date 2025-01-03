@@ -107,7 +107,7 @@ int client_send_result_new(YAAMP_CLIENT *client, const char *format, ...)
 	else
 		sprintf(buffer3, "%d", client->id_int);
 
-	return socket_send(client->sock, "{\"error\":null,\"id\":%s,\"result\":%s}\n", buffer3, buffer);
+	return socket_send(client->sock, "{\"error\": null, \"id\": %s, \"result\": %s}\n", buffer3, buffer);
 }
 
 int client_call(YAAMP_CLIENT *client, const char *method, const char *format, ...)
