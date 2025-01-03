@@ -91,6 +91,25 @@ int client_send_result(YAAMP_CLIENT *client, const char *format, ...)
 	return socket_send(client->sock, "{\"id\":%s,\"result\":%s,\"error\":null}\n", buffer3, buffer);
 }
 
+int client_send_result_new(YAAMP_CLIENT *client, const char *format, ...)
+{
+	char buffer[YAAMP_SMALLBUFSIZE];
+	va_list args;
+
+	va_start(args, format);
+	vsprintf(buffer, format, args);
+	va_end(args);
+
+	char buffer3[1024];
+
+	if(client->id_str)
+		sprintf(buffer3, "\"%s\"", client->id_str);
+	else
+		sprintf(buffer3, "%d", client->id_int);
+
+	return socket_send(client->sock, "{\"error\":null},\"id\":%s,\"result\":%s\n", buffer3, buffer);
+}
+
 int client_call(YAAMP_CLIENT *client, const char *method, const char *format, ...)
 {
 	char buffer[YAAMP_SMALLBUFSIZE];

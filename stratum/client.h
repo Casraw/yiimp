@@ -150,6 +150,7 @@ int client_ask(YAAMP_CLIENT *client, const char *method, const char *format, ...
 void client_dump_all();
 
 int client_send_result(YAAMP_CLIENT *client, const char *format, ...);
+int client_send_result_new(YAAMP_CLIENT *client, const char *format, ...);
 int client_send_error(YAAMP_CLIENT *client, int error, const char *string);
 
 bool client_ask_stats(YAAMP_CLIENT *client);
